@@ -1,8 +1,8 @@
 .app {
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #8e44ad 100%);
   background-image:
     radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
@@ -13,7 +13,7 @@
   background-position: 0 0, 0 0, 0 0, 0 0;
   background-repeat: no-repeat;
   font-family: 'Georgia', 'Times New Roman', serif;
-  padding: 0.75rem;
+  padding: 0.25rem;
   width: 100%;
   box-sizing: border-box;
   animation: fadeIn 0.6s ease-out;

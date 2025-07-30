@@ -248,7 +248,6 @@ function App() {
                 )}
               </form>
               <div className="gita-quote">
-                <h3>Bhagavad Gita Wisdom</h3>
                 {loadingQuote ? (
                   <div className="loading">Loading wisdom...</div>
                 ) : (
