@@ -30,9 +30,10 @@ a:hover {
 body {
   margin: 0;
   padding: 0;
-  min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #8e44ad 100%);
 }
 
 #root {
@@ -41,9 +42,9 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
   margin: 0;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
 }
 
 button {
@@ -69,23 +70,23 @@ button:focus-visible {
 
 /* Input field styling */
 input {
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-family: 'Georgia', serif;
   color: #333;
-  background-color: white;
-  border: 2px solid #e1e5e9;
-  border-radius: 5px;
-  padding: 0.75rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-size: 0.9rem;
   outline: none;
+  transition: all 0.3s ease;
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 
 input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
 }
 
 input:hover {
@@ -98,10 +99,12 @@ input::placeholder {
 
 /* Label styling */
 label {
+  font-family: 'Georgia', serif;
+  font-weight: 600;
+  color: #2a5298;
+  font-size: 0.9rem;
   display: block;
-  font-weight: 500;
-  color: #555;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 @media (prefers-color-scheme: light) {

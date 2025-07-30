@@ -1,0 +1,81 @@
+.coupon-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #8e44ad 100%);
+    background-image:
+        radial-gradient(circle at 30% 70%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 45% 45%, rgba(142, 68, 173, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #8e44ad 100%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0, 0 0, 0 0;
+    background-repeat: no-repeat;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    padding: 2rem;
+    color: white;
+    text-align: center;
+    position: relative;
+}
+
+.coupon-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    animation: fadeInDown 0.6s ease-out;
+    font-weight: bold;
+    color: #d4af37;
+}
+
+.coupon-page p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+    color: #f4f4f4;
+}
+
+.coupon-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        url("data:image/svg+xml,%3Csvg width='90' height='90' viewBox='0 0 90 90' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.04'%3E%3Cpath d='M45 45c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10-10-4.477-10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='140' height='140' viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='70' cy='70' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-size: 90px 90px, 140px 140px;
+    background-position: 0 0, 70px 70px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.coupon-page>* {
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
