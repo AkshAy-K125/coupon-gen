@@ -5,6 +5,8 @@ import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
 import Scan from './components/Scan/Scan'
 import Coupon from './components/Coupon/Coupon'
 import logo from './assets/Logo.png'
+import { generateCouponCode, addCouponToData } from './utils/couponGenerator'
+import { generateCouponPDF } from './utils/pdfGenerator'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -15,6 +17,7 @@ function App() {
   const [loadingQuote, setLoadingQuote] = useState(true)
   const [currentPage, setCurrentPage] = useState('home')
   const [name, setName] = useState('')
+  const [sevaType, setSevaType] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
 
@@ -144,30 +147,34 @@ function App() {
       return
     }
 
+    if (!sevaType) {
+      setSubmitMessage('Please select a seva type')
+      return
+    }
+
     setIsSubmitting(true)
     setSubmitMessage('')
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbyDcRX8aeniCk4dlVLYoShCFkh_xUd-fGkzGG-_di-7j-4S96a20-JqP5DKWRPgwz-eBQ/exec', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim()
-        })
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        setSubmitMessage(`Hare Krishna! Thank you ${result.name || name.trim()}`)
+      // Generate unique coupon code
+      const couponCode = generateCouponCode(name.trim())
+      
+      // Add coupon to data (in real app, this would save to database)
+      const newCoupon = addCouponToData(couponCode, name.trim())
+      
+      // Generate and download PDF
+      const pdfGenerated = await generateCouponPDF(name.trim(), couponCode, sevaType || '1')
+      
+      if (pdfGenerated) {
+        setSubmitMessage(`Hare Krishna! Coupon generated successfully for ${name.trim()}. PDF downloaded.`)
         setName('')
       } else {
-        throw new Error('API request failed')
+        setSubmitMessage(`Hare Krishna! Thank you ${name.trim()}. Coupon: ${couponCode}`)
+        setName('')
       }
 
     } catch (error) {
-      console.error('Error submitting name:', error)
+      console.error('Error generating coupon:', error)
       setSubmitMessage(`Hare Krishna! Thank you ${name.trim()}`)
       setName('')
     } finally {
@@ -239,12 +246,18 @@ function App() {
                     className="name-input"
                   />
                 </div>
-                {/* <select name="service" id="service">
-                  <option value="" disabled selected>Select Seva</option>
+                <select 
+                  name="service" 
+                  id="service" 
+                  value={sevaType} 
+                  onChange={(e) => setSevaType(e.target.value)}
+                  className="seva-select"
+                >
+                  <option value="" disabled>Select Seva</option>
                   <option value="1">Puja</option>
                   <option value="2">Prasadam</option>
                   <option value="3">Other</option>
-                </select> */}
+                </select>
                 <div className="landing-coupon-section">
                   <h3>Click below to generate coupon code</h3>
                   <button
@@ -252,7 +265,7 @@ function App() {
                     className="hare-krishna-btn"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Submitting...' : 'Hare Krishna'}
+                    {isSubmitting ? 'Generating Coupon...' : 'Generate Coupon'}
                   </button>
                 </div>
                 {submitMessage && (
