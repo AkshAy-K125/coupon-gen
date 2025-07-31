@@ -245,7 +245,7 @@ function App() {
                   <option value="2">Prasadam</option>
                   <option value="3">Other</option>
                 </select> */}
-                <div className="coupon-container">
+                <div className="landing-coupon-section">
                   <h3>Click below to generate coupon code</h3>
                   <button
                     type="submit"

@@ -563,8 +563,8 @@ select option:hover {
   transform: translateY(-1px);
 }
 
-/* Coupon container styling */
-.coupon-container {
+/* Landing page coupon section styling */
+.landing-coupon-section {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -573,7 +573,7 @@ select option:hover {
   text-align: center;
 }
 
-.coupon-container h3 {
+.landing-coupon-section h3 {
   color: #1e3c72;
   font-size: 1.1rem;
   font-weight: 600;

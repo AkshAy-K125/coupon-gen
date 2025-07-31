@@ -1,29 +1,101 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Coupon.css'
+import couponData from '../../data/coupons.json'
 
 function Coupon() {
     const [searchTerm, setSearchTerm] = useState('')
-    const [coupons, setCoupons] = useState([
-        { id: 1, name: 'Krishna Das', coupon: 'KRISHNA2024', date: '2024-01-15' },
-        { id: 2, name: 'Radha Rani', coupon: 'RADHA2024', date: '2024-01-16' },
-        { id: 3, name: 'Gopal Krishna', coupon: 'GOPAL2024', date: '2024-01-17' },
-        { id: 4, name: 'Hare Krishna', coupon: 'HARE2024', date: '2024-01-18' },
-        { id: 5, name: 'Bhagavan Das', coupon: 'BHAGAVAN2024', date: '2024-01-19' },
-        { id: 6, name: 'Lakshmi Devi', coupon: 'LAKSHMI2024', date: '2024-01-20' },
-        { id: 7, name: 'Narayana Das', coupon: 'NARAYANA2024', date: '2024-01-21' },
-        { id: 8, name: 'Sita Ram', coupon: 'SITA2024', date: '2024-01-22' },
-        { id: 9, name: 'Hanuman Das', coupon: 'HANUMAN2024', date: '2024-01-23' },
-        { id: 10, name: 'Durga Devi', coupon: 'DURGA2024', date: '2024-01-24' }
-    ])
+    const [coupons, setCoupons] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-    const handleDelete = (id) => {
-        setCoupons(coupons.filter(coupon => coupon.id !== id))
+    // Function to fetch coupons - can be easily replaced with API call
+    const fetchCoupons = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            
+            // Simulate API call delay
+            await new Promise(resolve => setTimeout(resolve, 500))
+            
+            // For now, using local JSON data
+            // TODO: Replace with actual API call when backend is ready
+            // const response = await fetch('/api/coupons')
+            // const data = await response.json()
+            
+            const data = couponData
+            
+            // Transform the data to match the table structure
+            const transformedCoupons = data.coupons.map((coupon, index) => ({
+                id: index + 1,
+                name: coupon.user.name,
+                coupon: coupon.code,
+                date: coupon.user.memberSince,
+                discount: coupon.discount,
+                validUntil: coupon.validUntil,
+                isActive: coupon.isActive,
+                email: coupon.user.email,
+                phone: coupon.user.phone
+            }))
+            
+            setCoupons(transformedCoupons)
+        } catch (err) {
+            console.error('Error fetching coupons:', err)
+            setError('Failed to load coupons. Please try again later.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Fetch coupons on component mount
+    useEffect(() => {
+        fetchCoupons()
+    }, [])
+
+    const handleDelete = async (id) => {
+        try {
+            // TODO: Replace with actual API call when backend is ready
+            // await fetch(`/api/coupons/${id}`, { method: 'DELETE' })
+            
+            // For now, just remove from local state
+            setCoupons(coupons.filter(coupon => coupon.id !== id))
+        } catch (err) {
+            console.error('Error deleting coupon:', err)
+            // You could show an error message here
+        }
     }
 
     const filteredCoupons = coupons.filter(coupon =>
         coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    if (loading) {
+        return (
+            <div className="coupon-page">
+                <div className="coupon-container">
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
+                        <p>Loading coupons...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="coupon-page">
+                <div className="coupon-container">
+                    <div className="error-container">
+                        <p className="error-message">{error}</p>
+                        <button onClick={fetchCoupons} className="retry-btn">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="coupon-page">
@@ -61,7 +133,12 @@ function Coupon() {
                                     <tr key={coupon.id}>
                                         <td>{coupon.name}</td>
                                         <td>
-                                            <span className="coupon-code">{coupon.coupon}</span>
+                                            <span 
+                                                className="coupon-code"
+                                                title={coupon.coupon}
+                                            >
+                                                {coupon.coupon.length > 4 ? `..${coupon.coupon.slice(-4)}` : coupon.coupon}
+                                            </span>
                                         </td>
                                         <td>{coupon.date}</td>
                                         <td>

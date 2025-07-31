@@ -47,6 +47,606 @@
         "memberSince": "2022-11-05"
       },
       "isActive": false
+    },
+    {
+      "code": "KRISHNA2024MANDIR1234",
+      "discount": "30%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Krishna Das",
+        "email": "krishna.das@example.com",
+        "phone": "+1-555-1001",
+        "memberSince": "2024-01-01"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RADHA2024MANDIR5678",
+      "discount": "40%",
+      "validUntil": "2024-11-30",
+      "user": {
+        "name": "Radha Rani",
+        "email": "radha.rani@example.com",
+        "phone": "+1-555-1002",
+        "memberSince": "2024-01-02"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GOPAL2024MANDIR9012",
+      "discount": "15%",
+      "validUntil": "2024-10-31",
+      "user": {
+        "name": "Gopal Krishna",
+        "email": "gopal.krishna@example.com",
+        "phone": "+1-555-1003",
+        "memberSince": "2024-01-03"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HARE2024MANDIR3456",
+      "discount": "35%",
+      "validUntil": "2024-09-30",
+      "user": {
+        "name": "Hare Krishna",
+        "email": "hare.krishna@example.com",
+        "phone": "+1-555-1004",
+        "memberSince": "2024-01-04"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BHAGAVAN2024MANDIR7890",
+      "discount": "45%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Bhagavan Das",
+        "email": "bhagavan.das@example.com",
+        "phone": "+1-555-1005",
+        "memberSince": "2024-01-05"
+      },
+      "isActive": true
+    },
+    {
+      "code": "LAKSHMI2024MANDIR1234",
+      "discount": "20%",
+      "validUntil": "2024-07-31",
+      "user": {
+        "name": "Lakshmi Devi",
+        "email": "lakshmi.devi@example.com",
+        "phone": "+1-555-1006",
+        "memberSince": "2024-01-06"
+      },
+      "isActive": true
+    },
+    {
+      "code": "NARAYANA2024MANDIR5678",
+      "discount": "25%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Narayana Das",
+        "email": "narayana.das@example.com",
+        "phone": "+1-555-1007",
+        "memberSince": "2024-01-07"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SITA2024MANDIR9012",
+      "discount": "30%",
+      "validUntil": "2024-05-31",
+      "user": {
+        "name": "Sita Ram",
+        "email": "sita.ram@example.com",
+        "phone": "+1-555-1008",
+        "memberSince": "2024-01-08"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HANUMAN2024MANDIR3456",
+      "discount": "40%",
+      "validUntil": "2024-04-30",
+      "user": {
+        "name": "Hanuman Das",
+        "email": "hanuman.das@example.com",
+        "phone": "+1-555-1009",
+        "memberSince": "2024-01-09"
+      },
+      "isActive": true
+    },
+    {
+      "code": "DURGA2024MANDIR7890",
+      "discount": "50%",
+      "validUntil": "2024-03-31",
+      "user": {
+        "name": "Durga Devi",
+        "email": "durga.devi@example.com",
+        "phone": "+1-555-1010",
+        "memberSince": "2024-01-10"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SHIVA2024MANDIR1234",
+      "discount": "35%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Shiva Das",
+        "email": "shiva.das@example.com",
+        "phone": "+1-555-1011",
+        "memberSince": "2024-01-11"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GANESHA2024MANDIR5678",
+      "discount": "25%",
+      "validUntil": "2024-11-30",
+      "user": {
+        "name": "Ganesha Das",
+        "email": "ganesha.das@example.com",
+        "phone": "+1-555-1012",
+        "memberSince": "2024-01-12"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BRAHMA2024MANDIR9012",
+      "discount": "30%",
+      "validUntil": "2024-10-31",
+      "user": {
+        "name": "Brahma Das",
+        "email": "brahma.das@example.com",
+        "phone": "+1-555-1013",
+        "memberSince": "2024-01-13"
+      },
+      "isActive": true
+    },
+    {
+      "code": "VISHNU2024MANDIR3456",
+      "discount": "40%",
+      "validUntil": "2024-09-30",
+      "user": {
+        "name": "Vishnu Das",
+        "email": "vishnu.das@example.com",
+        "phone": "+1-555-1014",
+        "memberSince": "2024-01-14"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RAM2024MANDIR7890",
+      "discount": "45%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Ram Das",
+        "email": "ram.das@example.com",
+        "phone": "+1-555-1015",
+        "memberSince": "2024-01-15"
+      },
+      "isActive": true
+    },
+    {
+      "code": "KRISHNA2024MANDIR1234",
+      "discount": "20%",
+      "validUntil": "2024-07-31",
+      "user": {
+        "name": "Krishna Ram",
+        "email": "krishna.ram@example.com",
+        "phone": "+1-555-1016",
+        "memberSince": "2024-01-16"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RADHA2024MANDIR5678",
+      "discount": "25%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Radha Krishna",
+        "email": "radha.krishna@example.com",
+        "phone": "+1-555-1017",
+        "memberSince": "2024-01-17"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GOPAL2024MANDIR9012",
+      "discount": "30%",
+      "validUntil": "2024-05-31",
+      "user": {
+        "name": "Gopal Ram",
+        "email": "gopal.ram@example.com",
+        "phone": "+1-555-1018",
+        "memberSince": "2024-01-18"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HARE2024MANDIR3456",
+      "discount": "35%",
+      "validUntil": "2024-04-30",
+      "user": {
+        "name": "Hare Ram",
+        "email": "hare.ram@example.com",
+        "phone": "+1-555-1019",
+        "memberSince": "2024-01-19"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BHAGAVAN2024MANDIR7890",
+      "discount": "40%",
+      "validUntil": "2024-03-31",
+      "user": {
+        "name": "Bhagavan Ram",
+        "email": "bhagavan.ram@example.com",
+        "phone": "+1-555-1020",
+        "memberSince": "2024-01-20"
+      },
+      "isActive": true
+    },
+    {
+      "code": "LAKSHMI2024MANDIR1234",
+      "discount": "45%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Lakshmi Ram",
+        "email": "lakshmi.ram@example.com",
+        "phone": "+1-555-1021",
+        "memberSince": "2024-01-21"
+      },
+      "isActive": true
+    },
+    {
+      "code": "NARAYANA2024MANDIR5678",
+      "discount": "50%",
+      "validUntil": "2024-11-30",
+      "user": {
+        "name": "Narayana Ram",
+        "email": "narayana.ram@example.com",
+        "phone": "+1-555-1022",
+        "memberSince": "2024-01-22"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SITA2024MANDIR9012",
+      "discount": "15%",
+      "validUntil": "2024-10-31",
+      "user": {
+        "name": "Sita Krishna",
+        "email": "sita.krishna@example.com",
+        "phone": "+1-555-1023",
+        "memberSince": "2024-01-23"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HANUMAN2024MANDIR3456",
+      "discount": "20%",
+      "validUntil": "2024-09-30",
+      "user": {
+        "name": "Hanuman Ram",
+        "email": "hanuman.ram@example.com",
+        "phone": "+1-555-1024",
+        "memberSince": "2024-01-24"
+      },
+      "isActive": true
+    },
+    {
+      "code": "DURGA2024MANDIR7890",
+      "discount": "25%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Durga Ram",
+        "email": "durga.ram@example.com",
+        "phone": "+1-555-1025",
+        "memberSince": "2024-01-25"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SHIVA2024MANDIR1234",
+      "discount": "30%",
+      "validUntil": "2024-07-31",
+      "user": {
+        "name": "Shiva Ram",
+        "email": "shiva.ram@example.com",
+        "phone": "+1-555-1026",
+        "memberSince": "2024-01-26"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GANESHA2024MANDIR5678",
+      "discount": "35%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Ganesha Ram",
+        "email": "ganesha.ram@example.com",
+        "phone": "+1-555-1027",
+        "memberSince": "2024-01-27"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BRAHMA2024MANDIR9012",
+      "discount": "40%",
+      "validUntil": "2024-05-31",
+      "user": {
+        "name": "Brahma Ram",
+        "email": "brahma.ram@example.com",
+        "phone": "+1-555-1028",
+        "memberSince": "2024-01-28"
+      },
+      "isActive": true
+    },
+    {
+      "code": "VISHNU2024MANDIR3456",
+      "discount": "45%",
+      "validUntil": "2024-04-30",
+      "user": {
+        "name": "Vishnu Ram",
+        "email": "vishnu.ram@example.com",
+        "phone": "+1-555-1029",
+        "memberSince": "2024-01-29"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RAM2024MANDIR7890",
+      "discount": "50%",
+      "validUntil": "2024-03-31",
+      "user": {
+        "name": "Ram Krishna",
+        "email": "ram.krishna@example.com",
+        "phone": "+1-555-1030",
+        "memberSince": "2024-01-30"
+      },
+      "isActive": true
+    },
+    {
+      "code": "KRISHNA2024MANDIR1234",
+      "discount": "15%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Krishna Gopal",
+        "email": "krishna.gopal@example.com",
+        "phone": "+1-555-1031",
+        "memberSince": "2024-02-01"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RADHA2024MANDIR5678",
+      "discount": "20%",
+      "validUntil": "2024-11-30",
+      "user": {
+        "name": "Radha Gopal",
+        "email": "radha.gopal@example.com",
+        "phone": "+1-555-1032",
+        "memberSince": "2024-02-02"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GOPAL2024MANDIR9012",
+      "discount": "25%",
+      "validUntil": "2024-10-31",
+      "user": {
+        "name": "Gopal Krishna",
+        "email": "gopal.krishna@example.com",
+        "phone": "+1-555-1033",
+        "memberSince": "2024-02-03"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HARE2024MANDIR3456",
+      "discount": "30%",
+      "validUntil": "2024-09-30",
+      "user": {
+        "name": "Hare Gopal",
+        "email": "hare.gopal@example.com",
+        "phone": "+1-555-1034",
+        "memberSince": "2024-02-04"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BHAGAVAN2024MANDIR7890",
+      "discount": "35%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Bhagavan Gopal",
+        "email": "bhagavan.gopal@example.com",
+        "phone": "+1-555-1035",
+        "memberSince": "2024-02-05"
+      },
+      "isActive": true
+    },
+    {
+      "code": "LAKSHMI2024MANDIR1234",
+      "discount": "40%",
+      "validUntil": "2024-07-31",
+      "user": {
+        "name": "Lakshmi Gopal",
+        "email": "lakshmi.gopal@example.com",
+        "phone": "+1-555-1036",
+        "memberSince": "2024-02-06"
+      },
+      "isActive": true
+    },
+    {
+      "code": "NARAYANA2024MANDIR5678",
+      "discount": "45%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Narayana Gopal",
+        "email": "narayana.gopal@example.com",
+        "phone": "+1-555-1037",
+        "memberSince": "2024-02-07"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SITA2024MANDIR9012",
+      "discount": "50%",
+      "validUntil": "2024-05-31",
+      "user": {
+        "name": "Sita Gopal",
+        "email": "sita.gopal@example.com",
+        "phone": "+1-555-1038",
+        "memberSince": "2024-02-08"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HANUMAN2024MANDIR3456",
+      "discount": "15%",
+      "validUntil": "2024-04-30",
+      "user": {
+        "name": "Hanuman Gopal",
+        "email": "hanuman.gopal@example.com",
+        "phone": "+1-555-1039",
+        "memberSince": "2024-02-09"
+      },
+      "isActive": true
+    },
+    {
+      "code": "DURGA2024MANDIR7890",
+      "discount": "20%",
+      "validUntil": "2024-03-31",
+      "user": {
+        "name": "Durga Gopal",
+        "email": "durga.gopal@example.com",
+        "phone": "+1-555-1040",
+        "memberSince": "2024-02-10"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SHIVA2024MANDIR1234",
+      "discount": "25%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Shiva Gopal",
+        "email": "shiva.gopal@example.com",
+        "phone": "+1-555-1041",
+        "memberSince": "2024-02-11"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GANESHA2024MANDIR5678",
+      "discount": "30%",
+      "validUntil": "2024-11-30",
+      "user": {
+        "name": "Ganesha Gopal",
+        "email": "ganesha.gopal@example.com",
+        "phone": "+1-555-1042",
+        "memberSince": "2024-02-12"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BRAHMA2024MANDIR9012",
+      "discount": "35%",
+      "validUntil": "2024-10-31",
+      "user": {
+        "name": "Brahma Gopal",
+        "email": "brahma.gopal@example.com",
+        "phone": "+1-555-1043",
+        "memberSince": "2024-02-13"
+      },
+      "isActive": true
+    },
+    {
+      "code": "VISHNU2024MANDIR3456",
+      "discount": "40%",
+      "validUntil": "2024-09-30",
+      "user": {
+        "name": "Vishnu Gopal",
+        "email": "vishnu.gopal@example.com",
+        "phone": "+1-555-1044",
+        "memberSince": "2024-02-14"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RAM2024MANDIR7890",
+      "discount": "45%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Ram Gopal",
+        "email": "ram.gopal@example.com",
+        "phone": "+1-555-1045",
+        "memberSince": "2024-02-15"
+      },
+      "isActive": true
+    },
+    {
+      "code": "KRISHNA2024MANDIR1234",
+      "discount": "50%",
+      "validUntil": "2024-07-31",
+      "user": {
+        "name": "Krishna Sita",
+        "email": "krishna.sita@example.com",
+        "phone": "+1-555-1046",
+        "memberSince": "2024-02-16"
+      },
+      "isActive": true
+    },
+    {
+      "code": "RADHA2024MANDIR5678",
+      "discount": "15%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Radha Sita",
+        "email": "radha.sita@example.com",
+        "phone": "+1-555-1047",
+        "memberSince": "2024-02-17"
+      },
+      "isActive": true
+    },
+    {
+      "code": "GOPAL2024MANDIR9012",
+      "discount": "20%",
+      "validUntil": "2024-05-31",
+      "user": {
+        "name": "Gopal Sita",
+        "email": "gopal.sita@example.com",
+        "phone": "+1-555-1048",
+        "memberSince": "2024-02-18"
+      },
+      "isActive": true
+    },
+    {
+      "code": "HARE2024MANDIR3456",
+      "discount": "25%",
+      "validUntil": "2024-04-30",
+      "user": {
+        "name": "Hare Sita",
+        "email": "hare.sita@example.com",
+        "phone": "+1-555-1049",
+        "memberSince": "2024-02-19"
+      },
+      "isActive": true
+    },
+    {
+      "code": "BHAGAVAN2024MANDIR7890",
+      "discount": "30%",
+      "validUntil": "2024-03-31",
+      "user": {
+        "name": "Bhagavan Sita",
+        "email": "bhagavan.sita@example.com",
+        "phone": "+1-555-1050",
+        "memberSince": "2024-02-20"
+      },
+      "isActive": true
     }
   ]
 } 
