@@ -4,6 +4,7 @@ import gitaData from './data/bhagavadGita.json'
 import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
 import Scan from './components/Scan/Scan'
 import Coupon from './components/Coupon/Coupon'
+import logo from './assets/Logo.png'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -180,7 +181,11 @@ function App() {
       return (
         <div className="app">
           <div className="login-container">
-            <h1>Login</h1>
+            <div className="login-header">
+              <img src={logo} alt="ISKCON Logo" className="login-logo" />
+              <h1>ISKCON Shri Jagannath Mandir</h1>
+              <p>Kudupu Katte, Mangaluru</p>
+            </div>
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
                 <label htmlFor="username">Username:</label>
@@ -227,20 +232,29 @@ function App() {
                 <div className="form-group">
                   <input
                     type="text"
-                    placeholder="Enter your name"
+                    placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={isSubmitting}
                     className="name-input"
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="hare-krishna-btn"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Hare Krishna'}
-                </button>
+                {/* <select name="service" id="service">
+                  <option value="" disabled selected>Select Seva</option>
+                  <option value="1">Puja</option>
+                  <option value="2">Prasadam</option>
+                  <option value="3">Other</option>
+                </select> */}
+                <div className="coupon-container">
+                  <h3>Click below to generate coupon code</h3>
+                  <button
+                    type="submit"
+                    className="hare-krishna-btn"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Hare Krishna'}
+                  </button>
+                </div>
                 {submitMessage && (
                   <div className={`submit-message ${submitMessage.includes('Thank you') ? 'success' : 'error'}`}>
                     {submitMessage}

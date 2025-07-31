@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import './HamburgerMenu.css'
+import logo from '../../assets/Logo.png'
 
 function HamburgerMenu({ onNavigate, currentPage, onLogout }) {
     const [isOpen, setIsOpen] = useState(false)
@@ -20,12 +21,18 @@ function HamburgerMenu({ onNavigate, currentPage, onLogout }) {
 
     return (
         <div className="hamburger-container">
+            <div className="header-content">
+                <img src={logo} alt="ISKCON Logo" className="header-logo" />
+                <div className="hamburger-text">
+                    <p>ISKON SHRI JAGANNATH MANDIR</p>
+                    <p>KUDUPU KATTE, MANGALURU</p>
+                </div>
+            </div>
             <button className="hamburger-button" onClick={toggleMenu}>
                 <span className={`hamburger-line ${isOpen ? 'open' : ''}`}></span>
                 <span className={`hamburger-line ${isOpen ? 'open' : ''}`}></span>
                 <span className={`hamburger-line ${isOpen ? 'open' : ''}`}></span>
             </button>
-
             <nav className={`hamburger-menu ${isOpen ? 'open' : ''}`}>
                 <ul className="menu-list">
                     <li className={`menu-item ${currentPage === 'home' ? 'active' : ''}`}>

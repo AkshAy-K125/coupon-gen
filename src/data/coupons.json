@@ -1,0 +1,52 @@
+{
+  "coupons": [
+    {
+      "code": "WELCOME2024",
+      "discount": "20%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "+1-555-0123",
+        "memberSince": "2024-01-15"
+      },
+      "isActive": true
+    },
+    {
+      "code": "SUMMER50",
+      "discount": "50%",
+      "validUntil": "2024-08-31",
+      "user": {
+        "name": "Jane Smith",
+        "email": "jane.smith@example.com",
+        "phone": "+1-555-0456",
+        "memberSince": "2023-06-20"
+      },
+      "isActive": true
+    },
+    {
+      "code": "FLASH25",
+      "discount": "25%",
+      "validUntil": "2024-06-30",
+      "user": {
+        "name": "Mike Johnson",
+        "email": "mike.johnson@example.com",
+        "phone": "+1-555-0789",
+        "memberSince": "2024-03-10"
+      },
+      "isActive": true
+    },
+    {
+      "code": "VIP100",
+      "discount": "100%",
+      "validUntil": "2024-12-31",
+      "user": {
+        "name": "Sarah Wilson",
+        "email": "sarah.wilson@example.com",
+        "phone": "+1-555-0321",
+        "memberSince": "2022-11-05"
+      },
+      "isActive": false
+    }
+  ]
+} 

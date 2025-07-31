@@ -54,7 +54,32 @@
     opacity: 0.9;
     animation: fadeInUp 0.6s ease-out 0.3s both;
     color: #f4f4f4;
+    margin-bottom: 1rem;
+}
+
+.test-link {
     margin-bottom: 2rem;
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.test-link a {
+    display: inline-block;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.test-link a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
 }
 
 .scanner-container {
@@ -223,27 +248,137 @@
     border: 2px solid #d4af37;
     border-radius: 12px;
     padding: 1.5rem;
-    max-width: 400px;
+    max-width: 500px;
     width: 100%;
     animation: fadeIn 0.6s ease-out;
+    backdrop-filter: blur(10px);
 }
 
-.scan-result h3 {
+.scan-result.success {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
+}
+
+.scan-result.error {
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.result-header h3 {
     color: #d4af37;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
     font-size: 1.3rem;
+}
+
+.scan-result.success .result-header h3 {
+    color: #27ae60;
+}
+
+.scan-result.error .result-header h3 {
+    color: #e74c3c;
+}
+
+.coupon-code {
+    background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+    color: #1e3c72;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    display: inline-block;
+    margin-top: 0.5rem;
 }
 
 .result-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
-.result-content p {
-    margin: 0;
+.coupon-details,
+.user-details {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-details h4 {
+    color: #d4af37;
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.label {
     color: #f4f4f4;
+    font-weight: 600;
     font-size: 0.9rem;
+}
+
+.value {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.value.discount {
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.error-message {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.error-message p {
+    margin: 0;
+    color: #e74c3c;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Georgia', serif;
+    margin-top: 1rem;
+}
+
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
 }
 
 .download-btn {
@@ -343,5 +478,164 @@
     .corner {
         width: 25px;
         height: 25px;
+    }
+
+    .scan-result {
+        max-width: 100%;
+        margin: 0 1rem;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .coupon-code {
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+}
+
+/* QR Scanner Container Styles */
+.qr-scanner-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 15px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    border: 3px solid #27ae60;
+    box-shadow: 0 0 20px rgba(39, 174, 96, 0.3);
+}
+
+#qr-reader {
+    width: 100% !important;
+    min-height: 300px;
+}
+
+#qr-reader__scan_region {
+    background: transparent !important;
+}
+
+#qr-reader__scan_region > img {
+    display: none !important;
+}
+
+#qr-reader__scan_region > video {
+    border-radius: 12px !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+#qr-reader__dashboard {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-radius: 8px !important;
+    margin: 10px !important;
+    padding: 10px !important;
+}
+
+#qr-reader__dashboard_section {
+    margin: 5px 0 !important;
+}
+
+#qr-reader__dashboard_section_csr > div {
+    margin: 5px 0 !important;
+}
+
+#qr-reader__dashboard_section_csr > div > button {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-family: 'Georgia', serif !important;
+}
+
+#qr-reader__dashboard_section_csr > div > button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4) !important;
+}
+
+#qr-reader__dashboard_section_csr > div > select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 0.9rem !important;
+    font-family: 'Georgia', serif !important;
+}
+
+#qr-reader__dashboard_section_csr > div > select option {
+    background: #1e3c72 !important;
+    color: white !important;
+}
+
+#qr-reader__status_span {
+    color: #d4af37 !important;
+    font-weight: 600 !important;
+    font-family: 'Georgia', serif !important;
+}
+
+#qr-reader__camera_selection {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 0.9rem !important;
+    font-family: 'Georgia', serif !important;
+    margin: 5px 0 !important;
+}
+
+#qr-reader__camera_selection option {
+    background: #1e3c72 !important;
+    color: white !important;
+}
+
+/* Hide default HTML5-QRCode styling that doesn't match our design */
+#qr-reader__dashboard_section_csr > div > span {
+    color: #f4f4f4 !important;
+    font-family: 'Georgia', serif !important;
+    font-size: 0.9rem !important;
+}
+
+#qr-reader__dashboard_section_csr > div > input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 0.9rem !important;
+    font-family: 'Georgia', serif !important;
+}
+
+#qr-reader__dashboard_section_csr > div > input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Mobile responsive for QR scanner */
+@media (max-width: 768px) {
+    .qr-scanner-container {
+        max-width: 300px;
+    }
+    
+    #qr-reader {
+        min-height: 250px;
+    }
+    
+    #qr-reader__dashboard {
+        margin: 5px !important;
+        padding: 8px !important;
+    }
+    
+    #qr-reader__dashboard_section_csr > div > button {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
     }
 }

@@ -1,12 +1,17 @@
 .hamburger-container {
     position: sticky;
     top: 0;
-    left: 1rem;
+    left: 0;
+    right: 0;
     z-index: 1000;
     padding: 1rem;
     background: rgba(30, 60, 114, 0.1);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 .hamburger-button {
@@ -49,6 +54,54 @@
 
 .hamburger-line.open:nth-child(3) {
     transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Header content with logo and text */
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.header-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    border: 2px solid rgba(212, 175, 55, 0.3);
+    transition: all 0.3s ease;
+}
+
+.header-logo:hover {
+    transform: scale(1.05);
+    border-color: #d4af37;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* Header text styling */
+.hamburger-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hamburger-text p {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0;
+    font-family: 'Georgia', serif;
+    text-align: center;
+}
+
+/* Sub-header text styling (50% smaller than main header) */
+.hamburger-text p:last-child {
+    font-size: 0.45rem;
+    font-weight: 500;
 }
 
 .hamburger-menu {
@@ -153,5 +206,37 @@
     .menu-item button {
         font-size: 1rem;
         padding: 0.875rem 1.25rem;
+    }
+    
+    .header-content {
+        gap: 0.5rem;
+    }
+    
+    .header-logo {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .hamburger-text p {
+        font-size: 0.8rem;
+    }
+    
+    .hamburger-text p:last-child {
+        font-size: 0.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .hamburger-text p {
+        font-size: 0.7rem;
+    }
+    
+    .hamburger-text p:last-child {
+        font-size: 0.35rem;
     }
 }
