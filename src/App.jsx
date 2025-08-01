@@ -25,7 +25,7 @@ function App() {
 
   // Static credentials
   const STATIC_USERNAME = 'admin'
-  const STATIC_PASSWORD = 'password123'
+  const STATIC_PASSWORD = 'p0kem0n'
 
   // Session storage functions
   const setSessionData = (data) => {
