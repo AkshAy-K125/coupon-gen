@@ -58,6 +58,16 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     doc.setFont('helvetica')
     doc.setTextColor(0, 0, 0)
     
+    // Get service display name
+    const getServiceDisplayName = (serviceCode) => {
+      const serviceMap = {
+        '1': 'Puja',
+        '2': 'Prasadam',
+        '3': 'Other'
+      }
+      return serviceMap[serviceCode] || serviceCode
+    }
+    
     // Select background image based on seva type
     let backgroundImage
     switch (sevaType) {
@@ -133,10 +143,16 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     const nameY = 60 + (titleLines.length * 8) + 15
     doc.text(`Name: ${userName}`, 105, nameY, { align: 'center' })
     
+    // Add service type
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    const serviceName = getServiceDisplayName(sevaType)
+    doc.text(`Service: ${serviceName}`, 105, nameY + 12, { align: 'center' })
+    
     // Add coupon code
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text(`Coupon Code: ${couponCode}`, 105, nameY + 15, { align: 'center' })
+    doc.text(`Coupon Code: ${couponCode}`, 105, nameY + 24, { align: 'center' })
     
     // Add generation date
     const currentDate = new Date().toLocaleDateString('en-US', {
@@ -146,12 +162,12 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     })
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
-    doc.text(`Generated on: ${currentDate}`, 105, nameY + 30, { align: 'center' })
+    doc.text(`Generated on: ${currentDate}`, 105, nameY + 36, { align: 'center' })
     
     // Generate and add QR code
     const qrDataURL = await generateQRCode(couponCode)
     if (qrDataURL) {
-      doc.addImage(qrDataURL, 'PNG', 75, nameY + 45, 60, 60)
+      doc.addImage(qrDataURL, 'PNG', 75, nameY + 50, 60, 60)
     }
     
     // Get random Bhagavad Gita quote
@@ -161,23 +177,19 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
     
-    // Add separator line
-    doc.setLineWidth(0.5)
-    doc.line(20, 205, 190, 205)
-    
     // Add Bhagavad Gita quote with word wrapping
     doc.setFontSize(9)
     doc.setFont('helvetica', 'italic')
     
     // Split quote into lines for better formatting
-    const maxWidth = 170 // Maximum width for text
+    const maxWidth = 160 // Reduced maximum width for better line breaks
     const quoteLines = doc.splitTextToSize(`"${gitaQuote.translation}"`, maxWidth)
     
     // Calculate starting Y position for quote (adjust based on number of lines)
-    const lineHeight = 6 // Increased line height for better spacing
-    const quoteStartY = 215 - (quoteLines.length - 1) * lineHeight
+    const lineHeight = 7 // Increased line height for better spacing
+    const quoteStartY = 225 - (quoteLines.length - 1) * lineHeight
     
-    // Add each line of the quote
+    // Add each line of the quote with better spacing
     quoteLines.forEach((line, index) => {
       doc.text(line, 105, quoteStartY + (index * lineHeight), { align: 'center' })
     })
@@ -185,12 +197,12 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     // Add quote reference with more spacing
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
-    const referenceY = quoteStartY + (quoteLines.length * lineHeight) + 8
+    const referenceY = quoteStartY + (quoteLines.length * lineHeight) + 10
     doc.text(`Chapter ${gitaQuote.chapter}, Verse ${gitaQuote.verse}`, 105, referenceY, { align: 'center' })
     
     // Add footer line with more spacing
     doc.setLineWidth(0.5)
-    const footerLineY = referenceY + 12
+    const footerLineY = referenceY + 15
     doc.line(20, footerLineY, 190, footerLineY)
     
     // Add footer text with more spacing

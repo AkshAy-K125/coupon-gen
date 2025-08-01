@@ -7,6 +7,7 @@ import Coupon from './components/Coupon/Coupon'
 import logo from './assets/Logo.png'
 import { generateCouponCode, addCouponToData } from './utils/couponGenerator'
 import { generateCouponPDF } from './utils/pdfGenerator'
+import couponData from './data/coupons.json'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -20,6 +21,7 @@ function App() {
   const [sevaType, setSevaType] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
+  const [coupons, setCoupons] = useState([])
 
   // Static credentials
   const STATIC_USERNAME = 'admin'
@@ -99,6 +101,11 @@ function App() {
     }
   }
 
+  // Initialize coupons from local data
+  useEffect(() => {
+    setCoupons(couponData.coupons)
+  }, [])
+
   useEffect(() => {
     fetchGitaQuote()
   }, [])
@@ -156,22 +163,39 @@ function App() {
     setSubmitMessage('')
 
     try {
-      // Generate unique coupon code
-      const couponCode = generateCouponCode(name.trim())
+      // Generate unique coupon code using existing coupons
+      const couponCode = generateCouponCode(name.trim(), coupons)
       
-      // Add coupon to data (in real app, this would save to database)
-      const newCoupon = addCouponToData(couponCode, name.trim())
+      // Add coupon to data with duplicate prevention
+      const result = addCouponToData(couponCode, name.trim(), sevaType, coupons)
+      
+      // Check if there's an error (same name and service or incomplete name)
+      if (result.error) {
+        setSubmitMessage(`Error: ${result.message}`)
+        setIsSubmitting(false)
+        return
+      }
+      
+      // Add the new coupon to the state immediately
+      const updatedCoupons = [...coupons, result.coupon]
+      setCoupons(updatedCoupons)
       
       // Generate and download PDF
-      const pdfGenerated = await generateCouponPDF(name.trim(), couponCode, sevaType || '1')
+      const pdfGenerated = await generateCouponPDF(result.coupon.user.name, couponCode, sevaType)
+      
+      let message = `Hare Krishna! Coupon generated successfully for ${result.coupon.user.name}.`
+      
+      // Add warning if name was modified
+      if (result.warning) {
+        message += ` ${result.warning}`
+      }
       
       if (pdfGenerated) {
-        setSubmitMessage(`Hare Krishna! Coupon generated successfully for ${name.trim()}. PDF downloaded.`)
-        setName('')
-      } else {
-        setSubmitMessage(`Hare Krishna! Thank you ${name.trim()}. Coupon: ${couponCode}`)
-        setName('')
+        message += ' PDF downloaded.'
       }
+      
+      setSubmitMessage(message)
+      setName('')
 
     } catch (error) {
       console.error('Error generating coupon:', error)
@@ -180,6 +204,11 @@ function App() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Function to handle coupon deletion
+  const handleCouponDelete = (id) => {
+    setCoupons(coupons.filter(coupon => coupon.code !== id))
   }
 
   // Render different pages based on currentPage
@@ -227,9 +256,9 @@ function App() {
     // Render different pages when logged in
     switch (currentPage) {
       case 'scan':
-        return <Scan />
+        return <Scan coupons={coupons} />
       case 'coupons':
-        return <Coupon />
+        return <Coupon coupons={coupons} onDeleteCoupon={handleCouponDelete} />
       case 'home':
       default:
         return (
@@ -239,11 +268,12 @@ function App() {
                 <div className="form-group">
                   <input
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="Enter your full name (first name and last name)"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={isSubmitting}
                     className="name-input"
+                    title="Please enter your complete name including first name and last name for better identification"
                   />
                 </div>
                 <select 
@@ -269,7 +299,7 @@ function App() {
                   </button>
                 </div>
                 {submitMessage && (
-                  <div className={`submit-message ${submitMessage.includes('Thank you') ? 'success' : 'error'}`}>
+                  <div className={`submit-message ${submitMessage.includes('Error:') ? 'error' : 'success'}`}>
                     {submitMessage}
                   </div>
                 )}

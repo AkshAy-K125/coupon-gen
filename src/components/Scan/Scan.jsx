@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
 import './Scan.css'
-import couponData from '../../data/coupons.json'
 
-function Scan() {
+function Scan({ coupons = [] }) {
     const [isScanning, setIsScanning] = useState(false)
     const [scanResult, setScanResult] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -13,7 +12,7 @@ function Scan() {
     const html5QrcodeScannerRef = useRef(null)
 
     const validateCoupon = (code) => {
-        const coupon = couponData.coupons.find(c => c.code === code)
+        const coupon = coupons.find(c => c.code === code)
         if (!coupon) {
             return { valid: false, message: 'Coupon code not found' }
         }

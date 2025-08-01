@@ -1,100 +1,116 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import './Coupon.css'
-import couponData from '../../data/coupons.json'
+import { generateCouponPDF } from '../../utils/pdfGenerator'
+import ConfirmationModal from './ConfirmationModal'
 
-function Coupon() {
+function Coupon({ coupons = [], onDeleteCoupon }) {
     const [searchTerm, setSearchTerm] = useState('')
-    const [coupons, setCoupons] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [serviceFilter, setServiceFilter] = useState('')
+    const [modalState, setModalState] = useState({
+        isOpen: false,
+        type: null,
+        coupon: null,
+        title: '',
+        message: '',
+        confirmText: '',
+        onConfirm: null
+    })
 
-    // Function to fetch coupons - can be easily replaced with API call
-    const fetchCoupons = async () => {
+    const handleDelete = async (code) => {
         try {
-            setLoading(true)
-            setError(null)
-            
-            // Simulate API call delay
-            await new Promise(resolve => setTimeout(resolve, 500))
-            
-            // For now, using local JSON data
-            // TODO: Replace with actual API call when backend is ready
-            // const response = await fetch('/api/coupons')
-            // const data = await response.json()
-            
-            const data = couponData
-            
-            // Transform the data to match the table structure
-            const transformedCoupons = data.coupons.map((coupon, index) => ({
-                id: index + 1,
-                name: coupon.user.name,
-                coupon: coupon.code,
-                date: coupon.user.memberSince,
-                discount: coupon.discount,
-                validUntil: coupon.validUntil,
-                isActive: coupon.isActive,
-                email: coupon.user.email,
-                phone: coupon.user.phone
-            }))
-            
-            setCoupons(transformedCoupons)
-        } catch (err) {
-            console.error('Error fetching coupons:', err)
-            setError('Failed to load coupons. Please try again later.')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    // Fetch coupons on component mount
-    useEffect(() => {
-        fetchCoupons()
-    }, [])
-
-    const handleDelete = async (id) => {
-        try {
-            // TODO: Replace with actual API call when backend is ready
-            // await fetch(`/api/coupons/${id}`, { method: 'DELETE' })
-            
-            // For now, just remove from local state
-            setCoupons(coupons.filter(coupon => coupon.id !== id))
+            if (onDeleteCoupon) {
+                onDeleteCoupon(code)
+            }
         } catch (err) {
             console.error('Error deleting coupon:', err)
             // You could show an error message here
         }
     }
 
-    const filteredCoupons = coupons.filter(coupon =>
-        coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-
-    if (loading) {
-        return (
-            <div className="coupon-page">
-                <div className="coupon-container">
-                    <div className="loading-container">
-                        <div className="loading-spinner"></div>
-                        <p>Loading coupons...</p>
-                    </div>
-                </div>
-            </div>
-        )
+    const handleGeneratePDF = async (coupon) => {
+        try {
+            await generateCouponPDF(coupon.user.name, coupon.code, coupon.service)
+        } catch (error) {
+            console.error('Error generating PDF:', error)
+            // You could show an error message here
+        }
     }
 
-    if (error) {
-        return (
-            <div className="coupon-page">
-                <div className="coupon-container">
-                    <div className="error-container">
-                        <p className="error-message">{error}</p>
-                        <button onClick={fetchCoupons} className="retry-btn">
-                            Try Again
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
+    const showPDFModal = (coupon) => {
+        setModalState({
+            isOpen: true,
+            type: 'pdf',
+            coupon: coupon,
+            title: 'Generate PDF',
+            message: `Do you want to generate and download a PDF for the coupon "${coupon.user.name}"?`,
+            confirmText: 'Generate PDF',
+            onConfirm: () => {
+                handleGeneratePDF(coupon)
+                closeModal()
+            }
+        })
+    }
+
+    const showDeleteModal = (coupon) => {
+        setModalState({
+            isOpen: true,
+            type: 'delete',
+            coupon: coupon,
+            title: 'Delete Coupon',
+            message: `Are you sure you want to delete the coupon for "${coupon.user.name}"? This action cannot be undone.`,
+            confirmText: 'Delete',
+            onConfirm: () => {
+                handleDelete(coupon.coupon)
+                closeModal()
+            }
+        })
+    }
+
+    const closeModal = () => {
+        setModalState({
+            isOpen: false,
+            type: null,
+            coupon: null,
+            title: '',
+            message: '',
+            confirmText: '',
+            onConfirm: null
+        })
+    }
+
+    // Transform the coupons data to match the table structure
+    const transformedCoupons = coupons.map((coupon, index) => ({
+        id: index + 1,
+        name: coupon.user.name,
+        coupon: coupon.code,
+        service: coupon.service,
+        discount: coupon.discount,
+        validUntil: coupon.validUntil,
+        isActive: coupon.isActive,
+        email: coupon.user.email,
+        phone: coupon.user.phone,
+        originalCoupon: coupon // Keep reference to original coupon object
+    }))
+
+    // Filter coupons by search term and service
+    const filteredCoupons = transformedCoupons.filter(coupon => {
+        const matchesSearch = coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesService = !serviceFilter || coupon.service === serviceFilter
+        return matchesSearch && matchesService
+    })
+
+    // Get unique services for filter dropdown
+    const uniqueServices = [...new Set(transformedCoupons.map(coupon => coupon.service))].filter(Boolean)
+
+    // Get service display name
+    const getServiceDisplayName = (serviceCode) => {
+        const serviceMap = {
+            '1': 'Puja',
+            '2': 'Prasadam',
+            '3': 'Other'
+        }
+        return serviceMap[serviceCode] || serviceCode
     }
 
     return (
@@ -111,6 +127,20 @@ function Coupon() {
                         />
                         <div className="search-icon">🔍</div>
                     </div>
+                    <div className="filter-section">
+                        <select
+                            value={serviceFilter}
+                            onChange={(e) => setServiceFilter(e.target.value)}
+                            className="service-filter"
+                        >
+                            <option value="">All Services</option>
+                            {uniqueServices.map(service => (
+                                <option key={service} value={service}>
+                                    {getServiceDisplayName(service)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="coupon-stats">
                         <span>Total: {coupons.length}</span>
                         <span>Showing: {filteredCoupons.length}</span>
@@ -123,8 +153,7 @@ function Coupon() {
                             <tr>
                                 <th>Name</th>
                                 <th>Coupon Code</th>
-                                <th>Date</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -140,22 +169,30 @@ function Coupon() {
                                                 {coupon.coupon.length > 4 ? `..${coupon.coupon.slice(-4)}` : coupon.coupon}
                                             </span>
                                         </td>
-                                        <td>{coupon.date}</td>
                                         <td>
-                                            <button
-                                                className="delete-btn"
-                                                onClick={() => handleDelete(coupon.id)}
-                                                title="Delete coupon"
-                                            >
-                                                🗑️
-                                            </button>
+                                            <div className="action-buttons">
+                                                <button
+                                                    className="pdf-btn"
+                                                    onClick={() => showPDFModal(coupon.originalCoupon)}
+                                                    title={`Generate PDF for ${coupon.name}`}
+                                                >
+                                                    📄
+                                                </button>
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => showDeleteModal(coupon.originalCoupon)}
+                                                    title="Delete coupon"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="no-results">
-                                        {searchTerm ? 'No coupons found matching your search.' : 'No coupons available.'}
+                                    <td colSpan="3" className="no-results">
+                                        {searchTerm || serviceFilter ? 'No coupons found matching your filters.' : 'No coupons available.'}
                                     </td>
                                 </tr>
                             )}
@@ -163,6 +200,16 @@ function Coupon() {
                     </table>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={modalState.isOpen}
+                onClose={closeModal}
+                onConfirm={modalState.onConfirm}
+                title={modalState.title}
+                message={modalState.message}
+                confirmText={modalState.confirmText}
+                type={modalState.type}
+            />
         </div>
     )
 }

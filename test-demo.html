@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coupon Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            background-color: #f0f8ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .error {
+            background-color: #ffe6e6;
+            color: #d32f2f;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Coupon Generation Test with Duplicate Prevention</h1>
+    
+    <div class="test-section">
+        <h3>Test Coupon Generation</h3>
+        <div class="form-group">
+            <label>Name:</label>
+            <input type="text" id="testName" placeholder="Enter full name" value="John Doe">
+        </div>
+        <div class="form-group">
+            <label>Service:</label>
+            <select id="testService">
+                <option value="1">Puja</option>
+                <option value="2">Prasadam</option>
+                <option value="3">Other</option>
+            </select>
+        </div>
+        <button onclick="testCouponGeneration()">Generate Coupon</button>
+        <div id="testResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Current Coupons</h3>
+        <button onclick="clearCoupons()">Clear All Coupons</button>
+        <div id="couponsList" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Quick Tests</h3>
+        <button onclick="runQuickTests()">Run Quick Tests</button>
+        <div id="quickTestResult" class="result"></div>
+    </div>
+
+    <script type="module">
+        // Import the coupon generator functions
+        import { generateCouponCode, addCouponToData } from './src/utils/couponGenerator.js';
+
+        // Store coupons in memory for testing
+        let testCoupons = [];
+
+        // Make functions available globally
+        window.testCouponGeneration = function() {
+            const name = document.getElementById('testName').value;
+            const service = document.getElementById('testService').value;
+            
+            if (!name.trim()) {
+                document.getElementById('testResult').innerHTML = '<span class="error">Please enter a name</span>';
+                return;
+            }
+
+            try {
+                // Generate unique coupon code
+                const couponCode = generateCouponCode(name.trim(), testCoupons);
+                
+                // Add coupon to data with duplicate prevention
+                const result = addCouponToData(couponCode, name.trim(), service, testCoupons);
+                
+                if (result.error) {
+                    document.getElementById('testResult').innerHTML = `<span class="error">Error: ${result.message}</span>`;
+                    return;
+                }
+                
+                // Add to our test array
+                testCoupons.push(result.coupon);
+                
+                let resultHtml = `<strong>Generated:</strong><br>
+                     Name: ${result.coupon.user.name}<br>
+                     Service: ${getServiceDisplayName(result.coupon.service)}<br>
+                     Code: ${result.coupon.code}<br>
+                     Date: ${result.coupon.user.memberSince}`;
+                
+                if (result.warning) {
+                    resultHtml += `<br><span class="warning">Warning: ${result.warning}</span>`;
+                }
+                
+                document.getElementById('testResult').innerHTML = resultHtml;
+                updateCouponsList();
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = `<span class="error">Error: ${error.message}</span>`;
+            }
+        };
+
+        window.clearCoupons = function() {
+            testCoupons = [];
+            updateCouponsList();
+            document.getElementById('testResult').innerHTML = 'All coupons cleared';
+        };
+
+        window.runQuickTests = function() {
+            const testCases = [
+                { name: 'John', service: '1' }, // Single name - should show error and prevent generation
+                { name: 'John Doe', service: '1' },
+                { name: 'John Doe', service: '2' }, // Same name, different service - should work
+                { name: 'John Doe', service: '1' }, // Same name, same service - should show error
+                { name: 'John Smith', service: '1' },
+                { name: 'John Wilson', service: '1' },
+                { name: 'John Michael Wilson', service: '2' },
+                { name: 'John Doe', service: '3' }, // Same name, different service - should work
+                { name: 'Jane', service: '1' }, // Single name - should show error and prevent generation
+                { name: 'Jane Smith', service: '1' }
+            ];
+
+            let result = '<h4>Quick Test Results:</h4>';
+            
+            testCases.forEach((testCase, index) => {
+                try {
+                    const couponCode = generateCouponCode(testCase.name, testCoupons);
+                    const result = addCouponToData(couponCode, testCase.name, testCase.service, testCoupons);
+                    
+                    if (result.error) {
+                        result += `<div style="margin: 5px 0; padding: 5px; background: #ffe6e6;">
+                            <strong>Test ${index + 1}:</strong> "${testCase.name}" (${getServiceDisplayName(testCase.service)}) → <span class="error">${result.message}</span>
+                        </div>`;
+                    } else {
+                        testCoupons.push(result.coupon);
+                        let testResult = `<strong>Test ${index + 1}:</strong> "${testCase.name}" (${getServiceDisplayName(testCase.service)}) → "${result.coupon.user.name}" (${result.coupon.code})`;
+                        
+                        if (result.warning) {
+                            testResult += ` <span class="warning">[${result.warning}]</span>`;
+                        }
+                        
+                        result += `<div style="margin: 5px 0; padding: 5px; background: #f9f9f9;">
+                            ${testResult}
+                        </div>`;
+                    }
+                } catch (error) {
+                    result += `<div style="margin: 5px 0; padding: 5px; background: #ffe6e6;">
+                        <strong>Test ${index + 1}:</strong> Error with "${testCase.name}": ${error.message}
+                    </div>`;
+                }
+            });
+            
+            document.getElementById('quickTestResult').innerHTML = result;
+            updateCouponsList();
+        };
+
+        function getServiceDisplayName(serviceCode) {
+            const serviceMap = {
+                '1': 'Puja',
+                '2': 'Prasadam',
+                '3': 'Other'
+            }
+            return serviceMap[serviceCode] || serviceCode;
+        }
+
+        function updateCouponsList() {
+            const listDiv = document.getElementById('couponsList');
+            if (testCoupons.length === 0) {
+                listDiv.innerHTML = 'No coupons generated yet';
+                return;
+            }
+            
+            let list = '<h4>Generated Coupons:</h4>';
+            testCoupons.forEach((coupon, index) => {
+                list += `<div style="margin: 5px 0; padding: 5px; background: #f0f0f0;">
+                    ${index + 1}. ${coupon.user.name} - ${getServiceDisplayName(coupon.service)} - ${coupon.code}
+                </div>`;
+            });
+            listDiv.innerHTML = list;
+        }
+
+        // Initialize
+        updateCouponsList();
+    </script>
+</body>
+</html> 

@@ -66,6 +66,37 @@
     flex-wrap: wrap;
 }
 
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.service-filter {
+    padding: 0.75rem 1rem;
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-family: 'Georgia', serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.service-filter:focus {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+    transform: translateY(-1px);
+}
+
+.service-filter option {
+    background: white;
+    color: #333;
+    padding: 0.5rem;
+}
+
 .search-box {
     position: relative;
     flex: 1;
@@ -141,8 +172,7 @@
 
 .coupon-table th:nth-child(1) { min-width: 120px; } /* Name */
 .coupon-table th:nth-child(2) { min-width: 150px; } /* Coupon Code */
-.coupon-table th:nth-child(3) { min-width: 100px; } /* Date */
-.coupon-table th:nth-child(4) { min-width: 80px; width: 80px; } /* Action */
+.coupon-table th:nth-child(3) { min-width: 120px; width: 120px; } /* Actions */
 
 .coupon-table td {
     padding: 1rem;
@@ -196,6 +226,34 @@
 .delete-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pdf-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
 }
 
 .no-results {
@@ -352,8 +410,7 @@
 
     .coupon-table th:nth-child(1) { min-width: 100px; } /* Name */
     .coupon-table th:nth-child(2) { min-width: 120px; } /* Coupon Code */
-    .coupon-table th:nth-child(3) { min-width: 80px; } /* Date */
-    .coupon-table th:nth-child(4) { min-width: 60px; width: 60px; } /* Action */
+    .coupon-table th:nth-child(3) { min-width: 100px; width: 100px; } /* Actions */
 
     .coupon-code {
         font-size: 0.7rem;
@@ -361,10 +418,15 @@
         word-break: break-all;
     }
 
-    .delete-btn {
+    .delete-btn,
+    .pdf-btn {
         width: 35px;
         height: 35px;
         font-size: 0.9rem;
+    }
+    
+    .action-buttons {
+        gap: 0.3rem;
     }
 }
 
@@ -395,18 +457,22 @@
 
     .coupon-table th:nth-child(1) { min-width: 80px; } /* Name */
     .coupon-table th:nth-child(2) { min-width: 100px; } /* Coupon Code */
-    .coupon-table th:nth-child(3) { min-width: 70px; } /* Date */
-    .coupon-table th:nth-child(4) { min-width: 50px; width: 50px; } /* Action */
+    .coupon-table th:nth-child(3) { min-width: 80px; width: 80px; } /* Actions */
 
     .coupon-code {
         font-size: 0.65rem;
         padding: 0.15rem 0.3rem;
     }
 
-    .delete-btn {
+    .delete-btn,
+    .pdf-btn {
         width: 30px;
         height: 30px;
         font-size: 0.8rem;
+    }
+    
+    .action-buttons {
+        gap: 0.2rem;
     }
 
     .search-input {
