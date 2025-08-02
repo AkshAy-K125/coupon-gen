@@ -58,15 +58,15 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     doc.setFont('helvetica')
     doc.setTextColor(0, 0, 0)
     
-    // Get service display name
-    const getServiceDisplayName = (serviceCode) => {
-      const serviceMap = {
-        '1': 'Puja',
-        '2': 'Prasadam',
-        '3': 'Other'
-      }
-      return serviceMap[serviceCode] || serviceCode
-    }
+    // Get seva display name
+const getSevaDisplayName = (sevaCode) => {
+  const sevaMap = {
+    '1': 'ABHISHEKAM SEVA',
+    '2': 'MAHA ARATHI SEVA',
+    '3': 'JHULAN SEVA'
+  }
+  return sevaMap[sevaCode] || sevaCode
+}
     
     // Select background image based on seva type
     let backgroundImage
@@ -113,10 +113,10 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     }
     doc.setFontSize(18)
     doc.setFont('helvetica', 'bold')
-    doc.text('ISKCON Shri Jagannath Mandir', 105, 25, { align: 'center' })
+    doc.text('ISKCON SHRI JAGANNATH MANDIR', 105, 25, { align: 'center' })
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
-    doc.text('Kudupu Katte, Mangaluru', 105, 35, { align: 'center' })
+    doc.text('KUDUPU KATTE, MANGALURU', 105, 35, { align: 'center' })
     
     // Add separator line
     doc.setDrawColor(0, 0, 0)
@@ -128,7 +128,8 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     doc.setFont('helvetica', 'italic')
     
     // Split the title into lines for better formatting
-    const titleText = 'Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare, Hare Rama, Hare Rama, Rama Rama, Hare Hare'
+    const titleText = 'Hare Krishna Hare Krishna Krishna Krishna Hare Hare Hare Rama Hare Rama Rama Rama Hare Hare'
+    
     const titleMaxWidth = 180 // Maximum width for title text
     const titleLines = doc.splitTextToSize(titleText, titleMaxWidth)
     
@@ -137,22 +138,28 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
       doc.text(line, 105, 60 + (index * 8), { align: 'center' })
     })
     
+    // Add spiritual message after Hare Krishna lines
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    const messageY = 60 + (titleLines.length * 8) + 5
+    doc.text('Please Chant and be Happy', 105, messageY, { align: 'center' })
+    
     // Add user name
     doc.setFontSize(16)
     doc.setFont('helvetica', 'normal')
-    const nameY = 60 + (titleLines.length * 8) + 15
-    doc.text(`Name: ${userName}`, 105, nameY, { align: 'center' })
+    const nameY = messageY + 15
+    doc.text(`${userName}`, 105, nameY, { align: 'center' })
     
-    // Add service type
+    // Add seva type
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    const serviceName = getServiceDisplayName(sevaType)
-    doc.text(`Service: ${serviceName}`, 105, nameY + 12, { align: 'center' })
+    const sevaName = getSevaDisplayName(sevaType)
+    doc.text(`${sevaName}`, 105, nameY + 12, { align: 'center' })
     
     // Add coupon code
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    doc.text(`Coupon Code: ${couponCode}`, 105, nameY + 24, { align: 'center' })
+    doc.text(`${couponCode}`, 105, nameY + 24, { align: 'center' })
     
     // Add generation date
     const currentDate = new Date().toLocaleDateString('en-US', {
@@ -208,7 +215,7 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     // Add footer text with more spacing
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
-    doc.text('Thank you for visiting ISKCON Shri Jagannath Mandir', 105, footerLineY + 12, { align: 'center' })
+    doc.text('Thank you for visiting ISKCON SHRI JAGANNATH MANDIR', 105, footerLineY + 12, { align: 'center' })
     
     // Generate filename
     const fileName = `coupon_${userName.replace(/\s+/g, '_')}_${Date.now()}.pdf`

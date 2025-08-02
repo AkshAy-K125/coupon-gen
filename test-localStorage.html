@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>localStorage Test</h1>
+    
+    <div class="test">
+        <h3>Test localStorage functionality</h3>
+        <button onclick="testLocalStorage()">Test localStorage</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="test">
+        <h3>Test Coupon Persistence</h3>
+        <input type="text" id="testName" placeholder="Name" value="Akshay Kumar">
+        <select id="testService">
+            <option value="1">Puja</option>
+            <option value="2">Prasadam</option>
+        </select>
+        <button onclick="testCouponPersistence()">Test Coupon</button>
+        <div id="couponResult"></div>
+    </div>
+
+    <script>
+        function testLocalStorage() {
+            const result = document.getElementById('result');
+            
+            try {
+                // Test basic localStorage
+                localStorage.setItem('test', 'value');
+                const retrieved = localStorage.getItem('test');
+                
+                if (retrieved === 'value') {
+                    result.innerHTML = '<div class="success">✅ localStorage is working correctly</div>';
+                } else {
+                    result.innerHTML = '<div class="error">❌ localStorage retrieval failed</div>';
+                }
+            } catch (error) {
+                result.innerHTML = '<div class="error">❌ localStorage error: ' + error.message + '</div>';
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('result').innerHTML = '<div class="success">🧹 Storage cleared</div>';
+        }
+
+        function testCouponPersistence() {
+            const name = document.getElementById('testName').value;
+            const service = document.getElementById('testService').value;
+            const result = document.getElementById('couponResult');
+            
+            // Load existing coupons
+            let coupons = [];
+            try {
+                const stored = localStorage.getItem('iskconCoupons');
+                if (stored) {
+                    coupons = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+            }
+            
+            console.log('Current coupons:', coupons);
+            
+            // Check for duplicate
+            const isDuplicate = coupons.some(coupon => 
+                coupon.user.name === name && coupon.service === service
+            );
+            
+            if (isDuplicate) {
+                result.innerHTML = '<div class="error">❌ Duplicate detected! Coupon already exists for ' + name + ' and service ' + service + '</div>';
+            } else {
+                // Add new coupon
+                const newCoupon = {
+                    code: 'COUPON' + Date.now(),
+                    service: service,
+                    user: { name: name }
+                };
+                
+                coupons.push(newCoupon);
+                localStorage.setItem('iskconCoupons', JSON.stringify(coupons));
+                
+                result.innerHTML = '<div class="success">✅ Coupon added successfully! Total coupons: ' + coupons.length + '</div>';
+            }
+        }
+    </script>
+</body>
+</html> 

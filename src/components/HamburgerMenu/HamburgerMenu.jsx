@@ -24,7 +24,7 @@ function HamburgerMenu({ onNavigate, currentPage, onLogout }) {
             <div className="header-content">
                 <img src={logo} alt="ISKCON Logo" className="header-logo" />
                 <div className="hamburger-text">
-                    <p>ISKON SHRI JAGANNATH MANDIR</p>
+                    <p>ISKCON SHRI JAGANNATH MANDIR</p>
                     <p>KUDUPU KATTE, MANGALURU</p>
                 </div>
             </div>

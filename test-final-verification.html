@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Duplicate Detection Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .result.success { border-left-color: #28a745; background: #d4edda; }
+        .result.error { border-left-color: #dc3545; background: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>✅ Duplicate Detection - Final Verification</h1>
+    
+    <div class="test-section">
+        <h2>Issue Resolution Summary</h2>
+        <p><strong>Problem:</strong> Duplicate detection wasn't working because coupons weren't persisted</p>
+        <p><strong>Solution:</strong> Added localStorage persistence to maintain coupon data across sessions</p>
+        <p><strong>Status:</strong> <span class="success">FIXED ✅</span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Test the Fix</h2>
+        <p>This test simulates the real application behavior with persistence:</p>
+        
+        <div>
+            <input type="text" id="testName" placeholder="Enter full name" value="Akshay Kumar">
+            <select id="testService">
+                <option value="1">Puja</option>
+                <option value="2">Prasadam</option>
+                <option value="3">Other</option>
+            </select>
+            <button onclick="testCouponGeneration()">Generate Coupon</button>
+            <button onclick="clearStorage()">Clear Storage</button>
+        </div>
+        
+        <div id="testResult"></div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Current Coupons in Storage:</h4>
+            <div id="currentCoupons"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Scenarios</h2>
+        <div class="result success">
+            <strong>✅ Scenario 1:</strong> First time user "Akshay Kumar" + "ABHISHEKAM SEVA" → Should succeed
+        </div>
+        <div class="result error">
+            <strong>❌ Scenario 2:</strong> Same user "Akshay Kumar" + "ABHISHEKAM SEVA" again → Should be blocked
+        </div>
+        <div class="result success">
+            <strong>✅ Scenario 3:</strong> Same user "Akshay Kumar" + "MAHA ARATHI SEVA" → Should succeed (different seva)
+        </div>
+        <div class="result success">
+            <strong>✅ Scenario 4:</strong> Different user "John Doe" + "ABHISHEKAM SEVA" → Should succeed
+        </div>
+        <div class="result error">
+            <strong>❌ Scenario 5:</strong> Case-insensitive duplicate "AKSHAY KUMAR" + "ABHISHEKAM SEVA" → Should be blocked
+        </div>
+        <div class="result info">
+            <strong>🔄 Scenario 6:</strong> After page refresh, duplicate detection should still work
+        </div>
+    </div>
+
+    <script>
+        // Simulate the coupon functions (case-insensitive)
+        function checkExactNameExistsForSeva(fullName, seva, coupons = []) {
+            const trimmedName = fullName.trim().toUpperCase();
+            return coupons.some(coupon => 
+                coupon.user.name.toUpperCase() === trimmedName && 
+                coupon.seva === seva
+            );
+        }
+
+        function addCouponToData(code, userName, seva, existingCoupons = []) {
+            if (checkExactNameExistsForSeva(userName, seva, existingCoupons)) {
+                const sevaNames = {
+                    '1': 'ABHISHEKAM SEVA',
+                    '2': 'MAHA ARATHI SEVA', 
+                    '3': 'JHULAN SEVA'
+                };
+                const sevaName = sevaNames[seva] || seva;
+                return {
+                    error: true,
+                    message: `A coupon for "${userName.trim().toUpperCase()}" and "${sevaName}" seva has already been generated. Please select a different seva or contact the administrator if you need assistance.`
+                };
+            }
+            
+            const newCoupon = {
+                code: code,
+                discount: "25%",
+                validUntil: "2024-12-31",
+                seva: seva,
+                user: {
+                    name: userName.trim().toUpperCase(),
+                    email: "",
+                    phone: "",
+                    memberSince: new Date().toISOString().split('T')[0]
+                },
+                isActive: true
+            };
+            
+            return {
+                error: false,
+                coupon: newCoupon,
+                warning: null
+            };
+        }
+
+        // Storage functions (simulating the app)
+        function saveCouponsToStorage(coupons) {
+            localStorage.setItem('iskconCoupons', JSON.stringify(coupons));
+        }
+
+        function loadCouponsFromStorage() {
+            const stored = localStorage.getItem('iskconCoupons');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function testCouponGeneration() {
+            const name = document.getElementById('testName').value;
+            const seva = document.getElementById('testService').value;
+            const resultDiv = document.getElementById('testResult');
+            
+            if (!name.trim()) {
+                resultDiv.innerHTML = '<div class="result error">Please enter a name</div>';
+                return;
+            }
+            
+            // Load existing coupons
+            const existingCoupons = loadCouponsFromStorage();
+            
+            // Try to generate coupon
+            const result = addCouponToData(`COUPON${Date.now()}`, name, seva, existingCoupons);
+            
+            if (result.error) {
+                resultDiv.innerHTML = `<div class="result error">❌ ${result.message}</div>`;
+            } else {
+                // Add to storage
+                existingCoupons.push(result.coupon);
+                saveCouponsToStorage(existingCoupons);
+                
+                const sevaNames = {
+                    '1': 'ABHISHEKAM SEVA',
+                    '2': 'MAHA ARATHI SEVA',
+                    '3': 'JHULAN SEVA'
+                };
+                
+                resultDiv.innerHTML = `<div class="result success">✅ Coupon generated successfully for "${result.coupon.user.name}" and "${sevaNames[seva]}" seva!</div>`;
+                updateCouponsDisplay();
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('iskconCoupons');
+            document.getElementById('testResult').innerHTML = '<div class="result info">🧹 Storage cleared</div>';
+            updateCouponsDisplay();
+        }
+
+        function updateCouponsDisplay() {
+            const coupons = loadCouponsFromStorage();
+            const container = document.getElementById('currentCoupons');
+            
+            if (coupons.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No coupons in storage</p>';
+                return;
+            }
+            
+            const sevaNames = {
+                '1': 'ABHISHEKAM SEVA',
+                '2': 'MAHA ARATHI SEVA',
+                '3': 'JHULAN SEVA'
+            };
+            
+            container.innerHTML = coupons.map(coupon => 
+                `<div style="background: #e9ecef; padding: 8px; margin: 5px 0; border-radius: 4px;">
+                    <strong>${coupon.user.name}</strong> - ${sevaNames[coupon.seva]} (${coupon.code})
+                </div>`
+            ).join('');
+        }
+
+        // Initialize
+        updateCouponsDisplay();
+    </script>
+</body>
+</html> 

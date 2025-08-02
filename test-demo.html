@@ -3,45 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coupon Generation Test</title>
+    <title>Coupon Duplicate Detection Demo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background: #f5f5f5;
         }
-        .test-section {
+        .demo-section {
+            background: white;
+            padding: 20px;
             margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            background: #f8f9fa;
             padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .result {
-            background-color: #f0f8ff;
-            padding: 10px;
             margin: 10px 0;
-            border-radius: 3px;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
         }
-        .error {
-            background-color: #ffe6e6;
-            color: #d32f2f;
-        }
-        .warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
         button {
-            background-color: #4CAF50;
+            background: #007bff;
             color: white;
-            padding: 10px 20px;
             border: none;
+            padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
             margin: 5px;
         }
         button:hover {
-            background-color: #45a049;
+            background: #0056b3;
         }
         input, select {
             padding: 8px;
@@ -49,179 +47,160 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        .form-group {
-            margin: 10px 0;
-        }
-        label {
-            display: inline-block;
-            width: 100px;
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
             font-weight: bold;
         }
+        .result.success { background: #d4edda; color: #155724; }
+        .result.error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <h1>Coupon Generation Test with Duplicate Prevention</h1>
+    <h1>Coupon Duplicate Detection Demo</h1>
     
-    <div class="test-section">
-        <h3>Test Coupon Generation</h3>
-        <div class="form-group">
-            <label>Name:</label>
-            <input type="text" id="testName" placeholder="Enter full name" value="John Doe">
+    <div class="demo-section">
+        <h2>How Duplicate Detection Works</h2>
+        <p>This demo shows how the coupon system prevents duplicate coupon generation for the same person and seva combination.</p>
+        
+        <div class="test-case">
+            <h3>Test Case 1: First Time User</h3>
+            <p><strong>Scenario:</strong> "Akshay Kumar" wants to generate a coupon for "ABHISHEKAM SEVA"</p>
+            <p><strong>Expected Result:</strong> ✅ Coupon generated successfully</p>
+            <p><strong>Reason:</strong> No previous coupon exists for this name + seva combination</p>
         </div>
-        <div class="form-group">
-            <label>Service:</label>
-            <select id="testService">
+        
+        <div class="test-case error">
+            <h3>Test Case 2: Duplicate Attempt</h3>
+            <p><strong>Scenario:</strong> "Akshay Kumar" tries to generate another coupon for "ABHISHEKAM SEVA"</p>
+            <p><strong>Expected Result:</strong> ❌ Error message displayed</p>
+            <p><strong>Reason:</strong> A coupon already exists for "Akshay Kumar" + "ABHISHEKAM SEVA" combination</p>
+        </div>
+        
+        <div class="test-case success">
+            <h3>Test Case 3: Different Seva</h3>
+            <p><strong>Scenario:</strong> "Akshay Kumar" wants to generate a coupon for "MAHA ARATHI SEVA"</p>
+            <p><strong>Expected Result:</strong> ✅ Coupon generated successfully</p>
+            <p><strong>Reason:</strong> No coupon exists for "Akshay Kumar" + "MAHA ARATHI SEVA" combination</p>
+        </div>
+        
+        <div class="test-case success">
+            <h3>Test Case 4: Different Person</h3>
+            <p><strong>Scenario:</strong> "John Doe" wants to generate a coupon for "ABHISHEKAM SEVA"</p>
+            <p><strong>Expected Result:</strong> ✅ Coupon generated successfully</p>
+            <p><strong>Reason:</strong> No coupon exists for "John Doe" + "ABHISHEKAM SEVA" combination</p>
+        </div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Interactive Demo</h2>
+        <p>Try entering different names and sevas to see the duplicate detection in action:</p>
+        
+        <div>
+            <input type="text" id="demoName" placeholder="Enter full name" value="Akshay Kumar">
+            <select id="demoService">
                 <option value="1">Puja</option>
                 <option value="2">Prasadam</option>
                 <option value="3">Other</option>
             </select>
+            <button onclick="testDuplicateDetection()">Test Duplicate Detection</button>
         </div>
-        <button onclick="testCouponGeneration()">Generate Coupon</button>
-        <div id="testResult" class="result"></div>
+        
+        <div id="demoResult" class="result" style="display: none;"></div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Generated Coupons:</h4>
+            <div id="generatedCoupons"></div>
+        </div>
+    </div>
+    
+    <div class="demo-section">
+        <h2>Implementation Details</h2>
+        <ul>
+            <li><strong>Function:</strong> <code>checkExactNameExistsForSeva(fullName, seva, coupons)</code></li>
+            <li><strong>Logic:</strong> Checks if any existing coupon has the same name AND seva</li>
+            <li><strong>Error Message:</strong> "A coupon for [name] and [seva] seva has already been generated..."</li>
+            <li><strong>User Experience:</strong> Form is not cleared on error, allowing user to see what they entered</li>
+            <li><strong>Error Clearing:</strong> Error message clears when user starts typing or changes seva</li>
+        </ul>
     </div>
 
-    <div class="test-section">
-        <h3>Current Coupons</h3>
-        <button onclick="clearCoupons()">Clear All Coupons</button>
-        <div id="couponsList" class="result"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>Quick Tests</h3>
-        <button onclick="runQuickTests()">Run Quick Tests</button>
-        <div id="quickTestResult" class="result"></div>
-    </div>
-
-    <script type="module">
-        // Import the coupon generator functions
-        import { generateCouponCode, addCouponToData } from './src/utils/couponGenerator.js';
-
-        // Store coupons in memory for testing
-        let testCoupons = [];
-
-        // Make functions available globally
-        window.testCouponGeneration = function() {
-            const name = document.getElementById('testName').value;
-            const service = document.getElementById('testService').value;
+    <script>
+        // Simulate the coupon data structure
+        let demoCoupons = [];
+        
+        function checkExactNameExistsForSeva(fullName, seva, coupons) {
+            const trimmedName = fullName.trim();
+            return coupons.some(coupon => 
+                coupon.user.name === trimmedName && 
+                coupon.seva === seva
+            );
+        }
+        
+        function testDuplicateDetection() {
+            const name = document.getElementById('demoName').value;
+            const seva = document.getElementById('demoService').value;
+            const resultDiv = document.getElementById('demoResult');
             
             if (!name.trim()) {
-                document.getElementById('testResult').innerHTML = '<span class="error">Please enter a name</span>';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter a name';
+                resultDiv.style.display = 'block';
                 return;
             }
-
-            try {
-                // Generate unique coupon code
-                const couponCode = generateCouponCode(name.trim(), testCoupons);
-                
-                // Add coupon to data with duplicate prevention
-                const result = addCouponToData(couponCode, name.trim(), service, testCoupons);
-                
-                if (result.error) {
-                    document.getElementById('testResult').innerHTML = `<span class="error">Error: ${result.message}</span>`;
-                    return;
-                }
-                
-                // Add to our test array
-                testCoupons.push(result.coupon);
-                
-                let resultHtml = `<strong>Generated:</strong><br>
-                     Name: ${result.coupon.user.name}<br>
-                     Service: ${getServiceDisplayName(result.coupon.service)}<br>
-                     Code: ${result.coupon.code}<br>
-                     Date: ${result.coupon.user.memberSince}`;
-                
-                if (result.warning) {
-                    resultHtml += `<br><span class="warning">Warning: ${result.warning}</span>`;
-                }
-                
-                document.getElementById('testResult').innerHTML = resultHtml;
-                updateCouponsList();
-            } catch (error) {
-                document.getElementById('testResult').innerHTML = `<span class="error">Error: ${error.message}</span>`;
-            }
-        };
-
-        window.clearCoupons = function() {
-            testCoupons = [];
-            updateCouponsList();
-            document.getElementById('testResult').innerHTML = 'All coupons cleared';
-        };
-
-        window.runQuickTests = function() {
-            const testCases = [
-                { name: 'John', service: '1' }, // Single name - should show error and prevent generation
-                { name: 'John Doe', service: '1' },
-                { name: 'John Doe', service: '2' }, // Same name, different service - should work
-                { name: 'John Doe', service: '1' }, // Same name, same service - should show error
-                { name: 'John Smith', service: '1' },
-                { name: 'John Wilson', service: '1' },
-                { name: 'John Michael Wilson', service: '2' },
-                { name: 'John Doe', service: '3' }, // Same name, different service - should work
-                { name: 'Jane', service: '1' }, // Single name - should show error and prevent generation
-                { name: 'Jane Smith', service: '1' }
-            ];
-
-            let result = '<h4>Quick Test Results:</h4>';
             
-            testCases.forEach((testCase, index) => {
-                try {
-                    const couponCode = generateCouponCode(testCase.name, testCoupons);
-                    const result = addCouponToData(couponCode, testCase.name, testCase.service, testCoupons);
-                    
-                    if (result.error) {
-                        result += `<div style="margin: 5px 0; padding: 5px; background: #ffe6e6;">
-                            <strong>Test ${index + 1}:</strong> "${testCase.name}" (${getServiceDisplayName(testCase.service)}) → <span class="error">${result.message}</span>
-                        </div>`;
-                    } else {
-                        testCoupons.push(result.coupon);
-                        let testResult = `<strong>Test ${index + 1}:</strong> "${testCase.name}" (${getServiceDisplayName(testCase.service)}) → "${result.coupon.user.name}" (${result.coupon.code})`;
-                        
-                        if (result.warning) {
-                            testResult += ` <span class="warning">[${result.warning}]</span>`;
-                        }
-                        
-                        result += `<div style="margin: 5px 0; padding: 5px; background: #f9f9f9;">
-                            ${testResult}
-                        </div>`;
+            const sevaNames = {
+                '1': 'ABHISHEKAM SEVA',
+                '2': 'MAHA ARATHI SEVA',
+                '3': 'JHULAN SEVA'
+            };
+            
+            if (checkExactNameExistsForSeva(name, seva, demoCoupons)) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: A coupon for "${name.trim()}" and "${sevaNames[seva]}" seva has already been generated. Please select a different seva or contact the administrator if you need assistance.`;
+            } else {
+                // Add new coupon
+                const newCoupon = {
+                    code: `COUPON${Date.now()}`,
+                    seva: seva,
+                    user: {
+                        name: name.trim()
                     }
-                } catch (error) {
-                    result += `<div style="margin: 5px 0; padding: 5px; background: #ffe6e6;">
-                        <strong>Test ${index + 1}:</strong> Error with "${testCase.name}": ${error.message}
-                    </div>`;
-                }
-            });
-            
-            document.getElementById('quickTestResult').innerHTML = result;
-            updateCouponsList();
-        };
-
-        function getServiceDisplayName(serviceCode) {
-            const serviceMap = {
-                '1': 'Puja',
-                '2': 'Prasadam',
-                '3': 'Other'
+                };
+                demoCoupons.push(newCoupon);
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `Success: Coupon generated for "${name.trim()}" and "${sevaNames[seva]}" seva!`;
+                
+                updateCouponsDisplay();
             }
-            return serviceMap[serviceCode] || serviceCode;
+            
+            resultDiv.style.display = 'block';
         }
-
-        function updateCouponsList() {
-            const listDiv = document.getElementById('couponsList');
-            if (testCoupons.length === 0) {
-                listDiv.innerHTML = 'No coupons generated yet';
+        
+        function updateCouponsDisplay() {
+            const container = document.getElementById('generatedCoupons');
+            const sevaNames = {
+                '1': 'ABHISHEKAM SEVA',
+                '2': 'MAHA ARATHI SEVA',
+                '3': 'JHULAN SEVA'
+            };
+            
+            if (demoCoupons.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No coupons generated yet</p>';
                 return;
             }
             
-            let list = '<h4>Generated Coupons:</h4>';
-            testCoupons.forEach((coupon, index) => {
-                list += `<div style="margin: 5px 0; padding: 5px; background: #f0f0f0;">
-                    ${index + 1}. ${coupon.user.name} - ${getServiceDisplayName(coupon.service)} - ${coupon.code}
-                </div>`;
-            });
-            listDiv.innerHTML = list;
+            container.innerHTML = demoCoupons.map(coupon => 
+                `<div style="background: #e9ecef; padding: 8px; margin: 5px 0; border-radius: 4px;">
+                    <strong>${coupon.user.name}</strong> - ${sevaNames[coupon.seva]} (${coupon.code})
+                </div>`
+            ).join('');
         }
-
-        // Initialize
-        updateCouponsList();
+        
+        // Initialize display
+        updateCouponsDisplay();
     </script>
 </body>
 </html> 

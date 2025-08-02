@@ -50,22 +50,22 @@ export const checkCouponExists = (code, coupons = []) => {
 // Function to check if name with initials already exists
 export const checkNameWithInitialsExists = (firstName, initials, coupons = []) => {
   const searchName = initials ? `${firstName} ${initials}` : firstName
-  return coupons.some(coupon => coupon.user.name === searchName)
+  return coupons.some(coupon => coupon.user.name.toUpperCase() === searchName.toUpperCase())
 }
 
-// Function to check if exact name already exists for the same service
-export const checkExactNameExistsForService = (fullName, service, coupons = []) => {
-  const trimmedName = fullName.trim()
+// Function to check if exact name already exists for the same seva
+export const checkExactNameExistsForSeva = (fullName, seva, coupons = []) => {
+  const trimmedName = fullName.trim().toUpperCase()
   return coupons.some(coupon => 
-    coupon.user.name === trimmedName && 
-    coupon.service === service
+    coupon.user.name.toUpperCase() === trimmedName && 
+    coupon.seva === seva
   )
 }
 
-// Function to check if exact name exists (regardless of service)
+// Function to check if exact name exists (regardless of seva)
 export const checkExactNameExists = (fullName, coupons = []) => {
-  const trimmedName = fullName.trim()
-  return coupons.some(coupon => coupon.user.name === trimmedName)
+  const trimmedName = fullName.trim().toUpperCase()
+  return coupons.some(coupon => coupon.user.name.toUpperCase() === trimmedName)
 }
 
 // Function to generate unique coupon code with duplicate prevention
@@ -134,7 +134,7 @@ export const generateUniqueName = (fullName, existingCoupons = []) => {
 }
 
 // Function to add new coupon to data
-export const addCouponToData = (code, userName, service, existingCoupons = []) => {
+export const addCouponToData = (code, userName, seva, existingCoupons = []) => {
   // Check if name is incomplete
   const isIncompleteName = checkIncompleteName(userName)
   
@@ -146,27 +146,33 @@ export const addCouponToData = (code, userName, service, existingCoupons = []) =
     }
   }
   
-  // Check if exact name exists for the same service
-  if (checkExactNameExistsForService(userName, service, existingCoupons)) {
+  // Check if exact name exists for the same seva
+  if (checkExactNameExistsForSeva(userName, seva, existingCoupons)) {
+    const sevaNames = {
+      '1': 'ABHISHEKAM SEVA',
+      '2': 'MAHA ARATHI SEVA', 
+      '3': 'JHULAN SEVA'
+    }
+    const sevaName = sevaNames[seva] || seva
     return {
       error: true,
-      message: 'A coupon for this name and service already exists. Please use a different service or add more details to the name.'
+      message: `A coupon for "${userName.trim().toUpperCase()}" and "${sevaName}" seva has already been generated. Please select a different seva or contact the administrator if you need assistance.`
     }
   }
   
   // Check if exact name exists (for warning)
   const exactNameExists = checkExactNameExists(userName, existingCoupons)
   
-  // Generate unique name to prevent duplicates
-  const uniqueName = generateUniqueName(userName, existingCoupons)
+  // Store the original name in uppercase for consistency
+  const originalName = userName.trim().toUpperCase()
   
   const newCoupon = {
     code: code,
     discount: "25%",
     validUntil: "2024-12-31",
-    service: service,
+    seva: seva,
     user: {
-      name: uniqueName,
+      name: originalName,
       email: "",
       phone: "",
       memberSince: new Date().toISOString().split('T')[0]
@@ -174,15 +180,9 @@ export const addCouponToData = (code, userName, service, existingCoupons = []) =
     isActive: true
   }
   
-  // Build warning messages (only for name modifications, not incomplete names)
-  let warnings = []
-  if (exactNameExists) {
-    warnings.push('Name already exists in the system. A unique name has been generated.')
-  }
-  
   return {
     error: false,
     coupon: newCoupon,
-    warning: warnings.length > 0 ? warnings.join(' ') : null
+    warning: null
   }
 } 

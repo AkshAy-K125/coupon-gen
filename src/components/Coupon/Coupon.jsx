@@ -5,7 +5,7 @@ import ConfirmationModal from './ConfirmationModal'
 
 function Coupon({ coupons = [], onDeleteCoupon }) {
     const [searchTerm, setSearchTerm] = useState('')
-    const [serviceFilter, setServiceFilter] = useState('')
+    const [sevaFilter, setSevaFilter] = useState('')
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: null,
@@ -29,7 +29,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
 
     const handleGeneratePDF = async (coupon) => {
         try {
-            await generateCouponPDF(coupon.user.name, coupon.code, coupon.service)
+            await generateCouponPDF(coupon.user.name, coupon.code, coupon.seva)
         } catch (error) {
             console.error('Error generating PDF:', error)
             // You could show an error message here
@@ -60,7 +60,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
             message: `Are you sure you want to delete the coupon for "${coupon.user.name}"? This action cannot be undone.`,
             confirmText: 'Delete',
             onConfirm: () => {
-                handleDelete(coupon.coupon)
+                handleDelete(coupon.code)
                 closeModal()
             }
         })
@@ -83,7 +83,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         id: index + 1,
         name: coupon.user.name,
         coupon: coupon.code,
-        service: coupon.service,
+        seva: coupon.seva,
         discount: coupon.discount,
         validUntil: coupon.validUntil,
         isActive: coupon.isActive,
@@ -92,25 +92,25 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         originalCoupon: coupon // Keep reference to original coupon object
     }))
 
-    // Filter coupons by search term and service
+    // Filter coupons by search term and seva
     const filteredCoupons = transformedCoupons.filter(coupon => {
         const matchesSearch = coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesService = !serviceFilter || coupon.service === serviceFilter
-        return matchesSearch && matchesService
+        const matchesSeva = !sevaFilter || coupon.seva === sevaFilter
+        return matchesSearch && matchesSeva
     })
 
-    // Get unique services for filter dropdown
-    const uniqueServices = [...new Set(transformedCoupons.map(coupon => coupon.service))].filter(Boolean)
+    // Get unique sevas for filter dropdown
+    const uniqueSevas = [...new Set(transformedCoupons.map(coupon => coupon.seva))].filter(Boolean)
 
-    // Get service display name
-    const getServiceDisplayName = (serviceCode) => {
-        const serviceMap = {
-            '1': 'Puja',
-            '2': 'Prasadam',
-            '3': 'Other'
+    // Get seva display name
+    const getSevaDisplayName = (sevaCode) => {
+        const sevaMap = {
+            '1': 'ABHISHEKAM SEVA',
+            '2': 'MAHA ARATHI SEVA',
+            '3': 'JHULAN SEVA'
         }
-        return serviceMap[serviceCode] || serviceCode
+        return sevaMap[sevaCode] || sevaCode
     }
 
     return (
@@ -129,14 +129,14 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                     </div>
                     <div className="filter-section">
                         <select
-                            value={serviceFilter}
-                            onChange={(e) => setServiceFilter(e.target.value)}
-                            className="service-filter"
+                            value={sevaFilter}
+                            onChange={(e) => setSevaFilter(e.target.value)}
+                            className="seva-filter"
                         >
-                            <option value="">All Services</option>
-                            {uniqueServices.map(service => (
-                                <option key={service} value={service}>
-                                    {getServiceDisplayName(service)}
+                            <option value="">ALL SEVA</option>
+                            {uniqueSevas.map(seva => (
+                                <option key={seva} value={seva}>
+                                    {getSevaDisplayName(seva)}
                                 </option>
                             ))}
                         </select>
@@ -192,7 +192,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                             ) : (
                                 <tr>
                                     <td colSpan="3" className="no-results">
-                                        {searchTerm || serviceFilter ? 'No coupons found matching your filters.' : 'No coupons available.'}
+                                        {searchTerm || sevaFilter ? 'No coupons found matching your filters.' : 'No coupons available.'}
                                     </td>
                                 </tr>
                             )}

@@ -25,7 +25,7 @@ function App() {
 
   // Static credentials
   const STATIC_USERNAME = 'admin'
-  const STATIC_PASSWORD = 'p0kem0n'
+  const STATIC_PASSWORD = 'password123'
 
   // Session storage functions
   const setSessionData = (data) => {
@@ -101,9 +101,32 @@ function App() {
     }
   }
 
-  // Initialize coupons from local data
+  // Function to save coupons to local storage (for persistence across sessions)
+  const saveCouponsToStorage = (updatedCoupons) => {
+    try {
+      localStorage.setItem('iskconCoupons', JSON.stringify(updatedCoupons))
+    } catch (error) {
+      console.error('Error saving coupons to storage:', error)
+    }
+  }
+
+  // Function to load coupons from local storage
+  const loadCouponsFromStorage = () => {
+    try {
+      const storedCoupons = localStorage.getItem('iskconCoupons')
+      if (storedCoupons) {
+        return JSON.parse(storedCoupons)
+      }
+    } catch (error) {
+      console.error('Error loading coupons from storage:', error)
+    }
+    return couponData.coupons // Fallback to JSON file
+  }
+
+  // Initialize coupons from local storage or local data
   useEffect(() => {
-    setCoupons(couponData.coupons)
+    const storedCoupons = loadCouponsFromStorage()
+    setCoupons(storedCoupons)
   }, [])
 
   useEffect(() => {
@@ -143,6 +166,13 @@ function App() {
     fetchGitaQuote()
   }
 
+  // Function to clear all coupons (for testing)
+  const clearAllCoupons = () => {
+    setCoupons([])
+    saveCouponsToStorage([])
+    setSubmitMessage('All coupons cleared for testing')
+  }
+
   const handleNavigation = (page) => {
     setCurrentPage(page)
   }
@@ -169,16 +199,20 @@ function App() {
       // Add coupon to data with duplicate prevention
       const result = addCouponToData(couponCode, name.trim(), sevaType, coupons)
       
-      // Check if there's an error (same name and service or incomplete name)
+      // Check if there's an error (same name and seva or incomplete name)
       if (result.error) {
         setSubmitMessage(`Error: ${result.message}`)
         setIsSubmitting(false)
+        // Don't clear the form on error so user can see what they entered
         return
       }
       
       // Add the new coupon to the state immediately
       const updatedCoupons = [...coupons, result.coupon]
       setCoupons(updatedCoupons)
+      
+      // Save to local storage for persistence
+      saveCouponsToStorage(updatedCoupons)
       
       // Generate and download PDF
       const pdfGenerated = await generateCouponPDF(result.coupon.user.name, couponCode, sevaType)
@@ -208,7 +242,9 @@ function App() {
 
   // Function to handle coupon deletion
   const handleCouponDelete = (id) => {
-    setCoupons(coupons.filter(coupon => coupon.code !== id))
+    const updatedCoupons = coupons.filter(coupon => coupon.code !== id)
+    setCoupons(updatedCoupons)
+    saveCouponsToStorage(updatedCoupons)
   }
 
   // Render different pages based on currentPage
@@ -268,25 +304,37 @@ function App() {
                 <div className="form-group">
                   <input
                     type="text"
-                    placeholder="Enter your full name (first name and last name)"
+                    placeholder="Enter your full name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      // Clear error message when user starts typing
+                      if (submitMessage.includes('Error:')) {
+                        setSubmitMessage('')
+                      }
+                    }}
                     disabled={isSubmitting}
                     className="name-input"
-                    title="Please enter your complete name including first name and last name for better identification"
+                    title="Please enter your complete name"
                   />
                 </div>
                 <select 
-                  name="service" 
-                  id="service" 
+                  name="seva" 
+                  id="seva" 
                   value={sevaType} 
-                  onChange={(e) => setSevaType(e.target.value)}
+                  onChange={(e) => {
+                    setSevaType(e.target.value)
+                    // Clear error message when user changes seva
+                    if (submitMessage.includes('Error:')) {
+                      setSubmitMessage('')
+                    }
+                  }}
                   className="seva-select"
                 >
                   <option value="" disabled>Select Seva</option>
-                  <option value="1">Puja</option>
-                  <option value="2">Prasadam</option>
-                  <option value="3">Other</option>
+                  <option value="1">ABHISHEKAM SEVA</option>
+                  <option value="2">MAHA ARATHI SEVA</option>
+                  <option value="3">JHULAN SEVA</option>
                 </select>
                 <div className="landing-coupon-section">
                   <h3>Click below to generate coupon code</h3>
@@ -300,17 +348,19 @@ function App() {
                 </div>
                 {submitMessage && (
                   <div className={`submit-message ${submitMessage.includes('Error:') ? 'error' : 'success'}`}>
+                    {submitMessage.includes('Error:') && <span style={{ marginRight: '8px' }}>⚠️</span>}
                     {submitMessage}
                   </div>
                 )}
+
               </form>
               <div className="gita-quote">
                 {loadingQuote ? (
                   <div className="loading">Loading wisdom...</div>
                 ) : (
                   <>
-                    <div className="quote-translation">"{gitaQuote.translation}"</div>
-                    <div className="quote-reference">Chapter {gitaQuote.chapter}, Verse {gitaQuote.verse}</div>
+                    <div className="quote-translation">"Whatever you do, whatever you eat, whatever you offer in sacrifice, whatever you give away, and whatever austerities you perform, O son of Kunti, offer it all to Me"</div>
+                    <div className="quote-reference">Chapter 9, Verse 27</div>
                   </>
                 )}
               </div>
