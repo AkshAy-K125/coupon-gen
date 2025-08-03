@@ -16,12 +16,12 @@ export const checkIncompleteName = (fullName) => {
 export const getInitials = (fullName, usedInitials = '') => {
   const trimmedName = fullName.trim()
   const nameParts = trimmedName.split(' ')
-  
+
   if (nameParts.length <= 1) return ''
-  
+
   // Start with first initial of second name
   let initials = nameParts[1].charAt(0).toUpperCase()
-  
+
   // If we already have some initials, add the next one
   if (usedInitials.length > 0) {
     const nextNameIndex = 1 + usedInitials.length
@@ -29,17 +29,8 @@ export const getInitials = (fullName, usedInitials = '') => {
       initials = usedInitials + nameParts[nextNameIndex].charAt(0).toUpperCase()
     }
   }
-  
-  return initials
-}
 
-// Function to convert string to ASCII values
-export const convertToASCII = (str) => {
-  let asciiString = ''
-  for (let i = 0; i < str.length; i++) {
-    asciiString += str.charCodeAt(i)
-  }
-  return asciiString
+  return initials
 }
 
 // Function to check if coupon code already exists in the provided coupons array
@@ -56,8 +47,8 @@ export const checkNameWithInitialsExists = (firstName, initials, coupons = []) =
 // Function to check if exact name already exists for the same seva
 export const checkExactNameExistsForSeva = (fullName, seva, coupons = []) => {
   const trimmedName = fullName.trim().toUpperCase()
-  return coupons.some(coupon => 
-    coupon.user.name.toUpperCase() === trimmedName && 
+  return coupons.some(coupon =>
+    coupon.user.name.toUpperCase() === trimmedName &&
     coupon.seva === seva
   )
 }
@@ -68,76 +59,99 @@ export const checkExactNameExists = (fullName, coupons = []) => {
   return coupons.some(coupon => coupon.user.name.toUpperCase() === trimmedName)
 }
 
+// Function to generate 12-digit random number
+export const generateRandomCode = () => {
+  // Generate a random number between 100000000000 (12 digits) and 999999999999 (12 digits)
+  const min = 100000000000 // 12-digit minimum
+  const max = 999999999999 // 12-digit maximum
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 // Function to generate unique coupon code with duplicate prevention
 export const generateCouponCode = (fullName, existingCoupons = []) => {
-  const firstName = getFirstName(fullName)
-  const asciiValue = convertToASCII(firstName)
-  let baseCode = `COUPON${asciiValue}`
-  
-  // Check if base code exists
-  if (!checkCouponExists(baseCode, existingCoupons)) {
-    return baseCode
+  let code = generateRandomCode().toString()
+
+  // Keep generating new codes until we find one that doesn't exist
+  while (checkCouponExists(code, existingCoupons)) {
+    code = generateRandomCode().toString()
+    console.log('Code already exists, generating new one:', code)
   }
-  
-  // If exists, add increment counter
-  let counter = 1
-  let newCode = `${baseCode}_${counter}`
-  
-  while (checkCouponExists(newCode, existingCoupons)) {
-    counter++
-    newCode = `${baseCode}_${counter}`
-  }
-  
-  return newCode
+
+  console.log('Generated unique coupon code:', code)
+  return code
 }
 
 // Function to generate unique name with initials to prevent duplicates
 export const generateUniqueName = (fullName, existingCoupons = []) => {
   const firstName = getFirstName(fullName)
-  
+
   // First try with just the first name
   if (!checkNameWithInitialsExists(firstName, '', existingCoupons)) {
     return firstName
   }
-  
+
   // If first name exists, try with first initial of second name
   let initials = getInitials(fullName)
   if (!checkNameWithInitialsExists(firstName, initials, existingCoupons)) {
     return `${firstName} ${initials}`
   }
-  
+
   // If that exists too, keep adding initials from subsequent names
   let usedInitials = initials
   let attempt = 1
-  
+
   while (attempt < 10) { // Prevent infinite loop
     const nextInitials = getInitials(fullName, usedInitials)
     if (!nextInitials || nextInitials === usedInitials) break
-    
+
     usedInitials = nextInitials
     if (!checkNameWithInitialsExists(firstName, usedInitials, existingCoupons)) {
       return `${firstName} ${usedInitials}`
     }
     attempt++
   }
-  
+
   // If all attempts fail, add a number suffix
   let counter = 1
   let finalName = `${firstName} ${usedInitials || 'A'}${counter}`
-  
+
   while (checkNameWithInitialsExists(firstName, `${usedInitials || 'A'}${counter}`, existingCoupons)) {
     counter++
     finalName = `${firstName} ${usedInitials || 'A'}${counter}`
   }
-  
+
   return finalName
 }
 
-// Function to add new coupon to data
-export const addCouponToData = (code, userName, seva, existingCoupons = []) => {
+// Seva name to code mapping
+export const sevaNameToCode = {
+  'ABHISHEKAM SEVA': '1',
+  'MAHA ARATHI SEVA': '2',
+  'JHULAN SEVA': '3'
+}
+
+// Seva code to name mapping
+export const sevaCodeToName = {
+  '1': 'ABHISHEKAM SEVA',
+  '2': 'MAHA ARATHI SEVA',
+  '3': 'JHULAN SEVA'
+}
+
+// Function to normalize seva (convert name to code if needed)
+export const normalizeSeva = (seva) => {
+  // If it's already a code (1, 2, 3), return as is
+  if (['1', '2', '3'].includes(seva)) {
+    return seva
+  }
+  // If it's a seva name, convert to code
+  return sevaNameToCode[seva] || seva
+}
+
+// Function to add new coupon to data (supports both traditional and server data formats)
+export const addCouponToData = (code, userName, seva, existingCoupons = [], serverData = null) => {
   // Check if name is incomplete
   const isIncompleteName = checkIncompleteName(userName)
-  
+
   // If name is incomplete, return error to prevent generation
   if (isIncompleteName) {
     return {
@@ -145,44 +159,62 @@ export const addCouponToData = (code, userName, seva, existingCoupons = []) => {
       message: 'Please provide a full name (first name and last name) for better identification. Coupon generation halted.'
     }
   }
-  
+
+  // Normalize seva for consistency
+  const normalizedSeva = normalizeSeva(seva)
+
   // Check if exact name exists for the same seva
-  if (checkExactNameExistsForSeva(userName, seva, existingCoupons)) {
-    const sevaNames = {
-      '1': 'ABHISHEKAM SEVA',
-      '2': 'MAHA ARATHI SEVA', 
-      '3': 'JHULAN SEVA'
-    }
-    const sevaName = sevaNames[seva] || seva
+  if (checkExactNameExistsForSeva(userName, normalizedSeva, existingCoupons)) {
+    const sevaName = sevaCodeToName[normalizedSeva] || seva
     return {
       error: true,
       message: `A coupon for "${userName.trim().toUpperCase()}" and "${sevaName}" seva has already been generated. Please select a different seva or contact the administrator if you need assistance.`
     }
   }
-  
+
   // Check if exact name exists (for warning)
   const exactNameExists = checkExactNameExists(userName, existingCoupons)
-  
+
   // Store the original name in uppercase for consistency
   const originalName = userName.trim().toUpperCase()
-  
+
+  // Use server data if provided, otherwise use traditional format
   const newCoupon = {
-    code: code,
+    code: serverData ? serverData.id : code,
     discount: "25%",
-    validUntil: "2024-12-31",
-    seva: seva,
+    validUntil: serverData ? serverData.date : "2024-12-31",
+    seva: normalizedSeva,
     user: {
       name: originalName,
       email: "",
       phone: "",
       memberSince: new Date().toISOString().split('T')[0]
     },
-    isActive: true
+    isActive: serverData ? serverData.status : true,
+    // Add server data fields if available
+    ...(serverData && {
+      serverData: {
+        originalId: serverData.id,
+        originalSeva: serverData.seva,
+        originalDate: serverData.date,
+        originalStatus: serverData.status
+      }
+    })
   }
-  
+
   return {
     error: false,
     coupon: newCoupon,
     warning: null
   }
+}
+
+// Function to create coupon from server data
+export const addCouponFromServerData = (serverDataItem, existingCoupons = []) => {
+  const { name, id, seva, date, status } = serverDataItem
+
+  // Use the server data to create coupon
+  const result = addCouponToData(id, name, seva, existingCoupons, serverDataItem)
+
+  return result
 } 

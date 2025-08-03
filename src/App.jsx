@@ -5,8 +5,9 @@ import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
 import Scan from './components/Scan/Scan'
 import Coupon from './components/Coupon/Coupon'
 import logo from './assets/Logo.png'
-import { generateCouponCode, addCouponToData } from './utils/couponGenerator'
+import { generateCouponCode, addCouponToData, addCouponFromServerData, sevaNameToCode, sevaCodeToName } from './utils/couponGenerator'
 import { generateCouponPDF } from './utils/pdfGenerator'
+import { loginCheck, addCoupon, getCoupons } from './utils/apiService'
 import couponData from './data/coupons.json'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [gitaQuote, setGitaQuote] = useState('')
   const [loadingQuote, setLoadingQuote] = useState(true)
   const [currentPage, setCurrentPage] = useState('home')
@@ -22,10 +24,11 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [coupons, setCoupons] = useState([])
+  const [serverData, setServerData] = useState([])
+  const [showServerDataSection, setShowServerDataSection] = useState(false)
+  const [isLoadingCoupons, setIsLoadingCoupons] = useState(false)
 
-  // Static credentials
-  const STATIC_USERNAME = 'admin'
-  const STATIC_PASSWORD = 'password123'
+
 
   // Session storage functions
   const setSessionData = (data) => {
@@ -123,11 +126,66 @@ function App() {
     return couponData.coupons // Fallback to JSON file
   }
 
-  // Initialize coupons from local storage or local data
-  useEffect(() => {
-    const storedCoupons = loadCouponsFromStorage()
-    setCoupons(storedCoupons)
-  }, [])
+  // Function to load coupons from server and update local storage
+  const loadCouponsFromServer = async (forceReload = false) => {
+    // Prevent multiple simultaneous loads
+    if (isLoadingCoupons && !forceReload) {
+      console.log('Already loading coupons, skipping...')
+      return
+    }
+
+    setIsLoadingCoupons(true)
+
+    try {
+      console.log('Loading coupons from server...')
+      const response = await getCoupons()
+
+      if (response && response.couponData && Array.isArray(response.couponData)) {
+        console.log('Coupons loaded from server:', response.couponData.length)
+
+        // Update local storage with server data
+        saveCouponsToStorage(response.couponData)
+
+        // Update state (always set, even if empty array)
+        setCoupons(response.couponData)
+        console.log('State updated with server data:', response.couponData.length, 'coupons')
+        return response.couponData
+      } else {
+        console.log('Invalid response from server, falling back to local storage')
+        const localCoupons = loadCouponsFromStorage()
+        console.log('Loaded from localStorage:', localCoupons.length, 'coupons')
+        setCoupons(localCoupons)
+        return localCoupons
+      }
+    } catch (error) {
+      console.error('Error loading coupons from server:', error)
+      console.log('Falling back to local storage due to server error')
+
+      // Fallback to local storage but don't clear existing state if localStorage is empty
+      const localCoupons = loadCouponsFromStorage()
+      console.log('Fallback loaded:', localCoupons.length, 'coupons')
+
+      // Only update state if we have local data or if current state is empty
+      if (localCoupons.length > 0 || coupons.length === 0) {
+        setCoupons(localCoupons)
+      } else {
+        console.log('Keeping existing state to prevent data loss')
+      }
+
+      return localCoupons
+    } finally {
+      setIsLoadingCoupons(false)
+    }
+  }
+
+  // Function to manually refresh coupon data
+  const refreshCoupons = async () => {
+    console.log('Manual refresh requested')
+    setSubmitMessage('Refreshing coupon data...')
+    await loadCouponsFromServer(true)
+    setSubmitMessage('Coupon data refreshed')
+    setTimeout(() => setSubmitMessage(''), 2000)
+  }
 
   useEffect(() => {
     fetchGitaQuote()
@@ -143,15 +201,46 @@ function App() {
     }
   }, [])
 
-  const handleLogin = (e) => {
+  // Load coupons when user logs in and when landing page renders
+  useEffect(() => {
+    if (isLoggedIn && coupons.length === 0) {
+      console.log('Loading initial coupon data...')
+      loadCouponsFromServer()
+    }
+  }, [isLoggedIn])
+
+  // Also load coupons on app startup if session exists
+  useEffect(() => {
+    const sessionData = getSessionData()
+    if (sessionData && coupons.length === 0) {
+      console.log('Loading coupons from existing session...')
+      loadCouponsFromServer()
+    }
+  }, [])
+
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    setIsLoggingIn(true)
 
-    if (username === STATIC_USERNAME && password === STATIC_PASSWORD) {
-      setIsLoggedIn(true)
-      setSessionData({ username, password })
-    } else {
-      setError('Invalid username or password')
+    try {
+      const result = await loginCheck(username, password)
+
+      if (result.authentication == 200) {
+        setIsLoggedIn(true)
+        setSessionData({ username, password })
+
+        // Load coupons immediately after successful login
+        console.log('Login successful, loading coupons...')
+        loadCouponsFromServer()
+      } else {
+        setError('Invalid username or password')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('Login failed. Please check your connection and try again.')
+    } finally {
+      setIsLoggingIn(false)
     }
   }
 
@@ -166,11 +255,71 @@ function App() {
     fetchGitaQuote()
   }
 
-  // Function to clear all coupons (for testing)
-  const clearAllCoupons = () => {
-    setCoupons([])
-    saveCouponsToStorage([])
-    setSubmitMessage('All coupons cleared for testing')
+  // Function to process server data and generate coupons
+  const processServerData = (serverDataArray) => {
+    if (!Array.isArray(serverDataArray)) {
+      setSubmitMessage('Error: Invalid server data format')
+      return
+    }
+
+    let successCount = 0
+    let errorCount = 0
+    const errors = []
+
+    const newCoupons = []
+
+    serverDataArray.forEach((serverItem, index) => {
+      try {
+        const result = addCouponFromServerData(serverItem, [...coupons, ...newCoupons])
+
+        if (result.error) {
+          errorCount++
+          errors.push(`Item ${index + 1} (${serverItem.name}): ${result.message}`)
+        } else {
+          successCount++
+          newCoupons.push(result.coupon)
+        }
+      } catch (error) {
+        errorCount++
+        errors.push(`Item ${index + 1}: ${error.message}`)
+      }
+    })
+
+    if (newCoupons.length > 0) {
+      const updatedCoupons = [...coupons, ...newCoupons]
+      setCoupons(updatedCoupons)
+      saveCouponsToStorage(updatedCoupons)
+
+      // Try to sync with server
+      newCoupons.forEach(async (coupon) => {
+        try {
+          await addCoupon(coupon, coupon.user.name, coupon.seva)
+        } catch (error) {
+          console.error('Error syncing coupon to server:', error)
+        }
+      })
+    }
+
+    let message = `Server data processed: ${successCount} successful, ${errorCount} errors`
+    if (errors.length > 0) {
+      message += `\n\nErrors:\n${errors.join('\n')}`
+    }
+
+    setSubmitMessage(message)
+  }
+
+  // Function to handle manual server data input
+  const handleServerDataSubmit = (e) => {
+    e.preventDefault()
+
+    if (!serverData || serverData.length === 0) {
+      setSubmitMessage('No server data to process')
+      return
+    }
+
+    processServerData(serverData)
+    setServerData([])
+    setShowServerDataSection(false)
   }
 
   const handleNavigation = (page) => {
@@ -195,10 +344,10 @@ function App() {
     try {
       // Generate unique coupon code using existing coupons
       const couponCode = generateCouponCode(name.trim(), coupons)
-      
+
       // Add coupon to data with duplicate prevention
       const result = addCouponToData(couponCode, name.trim(), sevaType, coupons)
-      
+
       // Check if there's an error (same name and seva or incomplete name)
       if (result.error) {
         setSubmitMessage(`Error: ${result.message}`)
@@ -206,28 +355,36 @@ function App() {
         // Don't clear the form on error so user can see what they entered
         return
       }
-      
-      // Add the new coupon to the state immediately
+
+      // Add the new coupon to the state and localStorage immediately
       const updatedCoupons = [...coupons, result.coupon]
       setCoupons(updatedCoupons)
-      
-      // Save to local storage for persistence
       saveCouponsToStorage(updatedCoupons)
-      
+
+      // Try to sync with server (but don't roll back on failure)
+      try {
+        await addCoupon(result.coupon, name.trim(), sevaType)
+        console.log('Coupon synced to server successfully')
+      } catch (error) {
+        console.error('Error syncing coupon to server:', error)
+        // Don't remove from local storage - keep the coupon locally
+        console.log('Coupon kept locally despite server sync failure')
+      }
+
       // Generate and download PDF
       const pdfGenerated = await generateCouponPDF(result.coupon.user.name, couponCode, sevaType)
-      
+
       let message = `Hare Krishna! Coupon generated successfully for ${result.coupon.user.name}.`
-      
+
       // Add warning if name was modified
       if (result.warning) {
         message += ` ${result.warning}`
       }
-      
+
       if (pdfGenerated) {
         message += ' PDF downloaded.'
       }
-      
+
       setSubmitMessage(message)
       setName('')
 
@@ -240,11 +397,21 @@ function App() {
     }
   }
 
-  // Function to handle coupon deletion
-  const handleCouponDelete = (id) => {
-    const updatedCoupons = coupons.filter(coupon => coupon.code !== id)
+  // Function to handle coupon deletion - called after server deletion succeeds
+  const handleCouponDelete = (couponCode, userName) => {
+    console.log('Deleting coupon locally:', couponCode, userName)
+
+    // Remove from local state
+    const updatedCoupons = coupons.filter(coupon => coupon.code !== couponCode)
+    console.log('Updated coupons after deletion:', updatedCoupons.length)
+
+    // Update state and localStorage
     setCoupons(updatedCoupons)
     saveCouponsToStorage(updatedCoupons)
+
+    // Show success message
+    setSubmitMessage(`Coupon ${couponCode} for ${userName} deleted successfully`)
+    setTimeout(() => setSubmitMessage(''), 3000)
   }
 
   // Render different pages based on currentPage
@@ -266,6 +433,7 @@ function App() {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoggingIn}
                   required
                 />
               </div>
@@ -276,12 +444,13 @@ function App() {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoggingIn}
                   required
                 />
               </div>
               {error && <div className="error">{error}</div>}
-              <button type="submit" className="login-btn">
-                Login
+              <button type="submit" className="login-btn" disabled={isLoggingIn}>
+                {isLoggingIn ? 'Logging in...' : 'Login'}
               </button>
             </form>
           </div>
@@ -318,10 +487,10 @@ function App() {
                     title="Please enter your complete name"
                   />
                 </div>
-                <select 
-                  name="seva" 
-                  id="seva" 
-                  value={sevaType} 
+                <select
+                  name="seva"
+                  id="seva"
+                  value={sevaType}
                   onChange={(e) => {
                     setSevaType(e.target.value)
                     // Clear error message when user changes seva
@@ -354,6 +523,118 @@ function App() {
                 )}
 
               </form>
+
+              {/* Server Data Section */}
+              <div className="server-data-section" style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+                <button
+                  onClick={() => setShowServerDataSection(!showServerDataSection)}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginBottom: '10px'
+                  }}
+                >
+                  {showServerDataSection ? 'Hide' : 'Show'} Server Data Import
+                </button>
+
+                {showServerDataSection && (
+                  <div>
+                    <h4>Import Server Data</h4>
+                    <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                      Paste server data array in JSON format:
+                    </p>
+                    <textarea
+                      placeholder='[{"name": "AKSHAY K", "id": "636493414012", "seva": "MAHA ARATHI SEVA", "date": "2025-08-02", "status": true}]'
+                      value={JSON.stringify(serverData, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const parsed = JSON.parse(e.target.value)
+                          setServerData(parsed)
+                        } catch (error) {
+                          // Keep the raw text for user to fix
+                          console.log('Invalid JSON, keeping raw text')
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '120px',
+                        padding: '8px',
+                        fontSize: '12px',
+                        fontFamily: 'monospace',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        marginBottom: '10px'
+                      }}
+                    />
+                    <button
+                      onClick={handleServerDataSubmit}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#2196F3',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Process Server Data
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Auto-fill with the provided sample data
+                        const sampleData = [
+                          {
+                            "name": "AKSHAY K",
+                            "id": "636493414012",
+                            "seva": "MAHA ARATHI SEVA",
+                            "date": "2025-08-02",
+                            "status": true
+                          },
+                          {
+                            "name": "AKSHAY K",
+                            "id": "275398578847",
+                            "seva": "JHULAN SEVA",
+                            "date": "2025-08-02",
+                            "status": true
+                          }
+                        ]
+                        setServerData(sampleData)
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#FF9800',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginLeft: '10px'
+                      }}
+                    >
+                      Load Sample Data
+                    </button>
+                    <button
+                      onClick={refreshCoupons}
+                      disabled={isLoadingCoupons}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#9C27B0',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isLoadingCoupons ? 'not-allowed' : 'pointer',
+                        marginLeft: '10px',
+                        opacity: isLoadingCoupons ? 0.6 : 1
+                      }}
+                    >
+                      {isLoadingCoupons ? 'Refreshing...' : 'Refresh Coupons'}
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="gita-quote">
                 {loadingQuote ? (
                   <div className="loading">Loading wisdom...</div>

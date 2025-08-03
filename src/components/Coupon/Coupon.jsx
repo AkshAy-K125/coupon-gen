@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import './Coupon.css'
 import { generateCouponPDF } from '../../utils/pdfGenerator'
 import ConfirmationModal from './ConfirmationModal'
+import { delCoupon } from '../../utils/apiService'
 
 function Coupon({ coupons = [], onDeleteCoupon }) {
     const [searchTerm, setSearchTerm] = useState('')
@@ -16,20 +17,42 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         onConfirm: null
     })
 
-    const handleDelete = async (code) => {
+    const handleDelete = async (code, name) => {
         try {
+            console.log('Attempting to delete coupon:', code, name)
+
             if (onDeleteCoupon) {
-                onDeleteCoupon(code)
+                // First try to delete from server
+                await delCoupon(code, name)
+                console.log('Server deletion successful')
+
+                // Only call local deletion if server deletion succeeds
+                onDeleteCoupon(code, name)
+                console.log('Local deletion completed')
             }
         } catch (err) {
-            console.error('Error deleting coupon:', err)
-            // You could show an error message here
+            console.error('Error deleting coupon from server:', err)
+
+            // Show error message but don't clear the table
+            alert(`Failed to delete coupon from server: ${err.message || 'Unknown error'}. Please try again.`)
+
+            // Optionally, still allow local deletion if user confirms
+            const confirmLocalDelete = window.confirm(
+                'Server deletion failed. Do you want to delete the coupon locally only? ' +
+                '(This may cause sync issues later.)'
+            )
+
+            if (confirmLocalDelete && onDeleteCoupon) {
+                console.log('User chose to delete locally despite server error')
+                onDeleteCoupon(code, name)
+            }
         }
     }
 
     const handleGeneratePDF = async (coupon) => {
         try {
-            await generateCouponPDF(coupon.user.name, coupon.code, coupon.seva)
+            const userName = coupon.user?.name || coupon.name || 'Unknown'
+            await generateCouponPDF(userName, coupon.code, coupon.seva)
         } catch (error) {
             console.error('Error generating PDF:', error)
             // You could show an error message here
@@ -37,12 +60,13 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
     }
 
     const showPDFModal = (coupon) => {
+        const userName = coupon.user?.name || coupon.name || 'Unknown'
         setModalState({
             isOpen: true,
             type: 'pdf',
             coupon: coupon,
             title: 'Generate PDF',
-            message: `Do you want to generate and download a PDF for the coupon "${coupon.user.name}"?`,
+            message: `Do you want to generate and download a PDF for the coupon "${userName}"?`,
             confirmText: 'Generate PDF',
             onConfirm: () => {
                 handleGeneratePDF(coupon)
@@ -52,15 +76,16 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
     }
 
     const showDeleteModal = (coupon) => {
+        const userName = coupon.user?.name || coupon.name || 'Unknown'
         setModalState({
             isOpen: true,
             type: 'delete',
             coupon: coupon,
             title: 'Delete Coupon',
-            message: `Are you sure you want to delete the coupon for "${coupon.user.name}"? This action cannot be undone.`,
+            message: `Are you sure you want to delete the coupon for "${userName}"? This action cannot be undone.`,
             confirmText: 'Delete',
             onConfirm: () => {
-                handleDelete(coupon.code)
+                handleDelete(coupon.code, userName)
                 closeModal()
             }
         })
@@ -81,21 +106,21 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
     // Transform the coupons data to match the table structure
     const transformedCoupons = coupons.map((coupon, index) => ({
         id: index + 1,
-        name: coupon.user.name,
-        coupon: coupon.code,
+        name: coupon.user?.name || coupon.name || 'Unknown',
+        coupon: coupon.code || 'No Code',
         seva: coupon.seva,
         discount: coupon.discount,
         validUntil: coupon.validUntil,
         isActive: coupon.isActive,
-        email: coupon.user.email,
-        phone: coupon.user.phone,
+        email: coupon.user?.email || '',
+        phone: coupon.user?.phone || '',
         originalCoupon: coupon // Keep reference to original coupon object
     }))
 
     // Filter coupons by search term and seva
     const filteredCoupons = transformedCoupons.filter(coupon => {
         const matchesSearch = coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
+            coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
         const matchesSeva = !sevaFilter || coupon.seva === sevaFilter
         return matchesSearch && matchesSeva
     })
@@ -162,11 +187,11 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                                     <tr key={coupon.id}>
                                         <td>{coupon.name}</td>
                                         <td>
-                                            <span 
+                                            <span
                                                 className="coupon-code"
-                                                title={coupon.coupon}
+                                                title={coupon.coupon || 'No Code'}
                                             >
-                                                {coupon.coupon.length > 4 ? `..${coupon.coupon.slice(-4)}` : coupon.coupon}
+                                                {coupon.coupon && coupon.coupon.length > 4 ? `..${coupon.coupon.slice(-4)}` : (coupon.coupon || 'No Code')}
                                             </span>
                                         </td>
                                         <td>
