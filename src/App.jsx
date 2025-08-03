@@ -401,9 +401,14 @@ function App() {
   const handleCouponDelete = (couponCode, userName) => {
     console.log('Deleting coupon locally:', couponCode, userName)
 
+    console.log("handleCouponDelete")
+    console.log(couponCode)
+
     // Remove from local state
-    const updatedCoupons = coupons.filter(coupon => coupon.code !== couponCode)
+    const updatedCoupons = coupons.filter(coupon => coupon.id !== couponCode)
+    console.log(updatedCoupons)
     console.log('Updated coupons after deletion:', updatedCoupons.length)
+
 
     // Update state and localStorage
     setCoupons(updatedCoupons)

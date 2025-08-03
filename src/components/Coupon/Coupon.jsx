@@ -21,13 +21,15 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         try {
             console.log('Attempting to delete coupon:', code, name)
 
+            console.log(code)
+
             if (onDeleteCoupon) {
                 // First try to delete from server
-                await delCoupon(code, name)
+                await delCoupon(code.id, name)
                 console.log('Server deletion successful')
 
                 // Only call local deletion if server deletion succeeds
-                onDeleteCoupon(code, name)
+                onDeleteCoupon(code.id, name)
                 console.log('Local deletion completed')
             }
         } catch (err) {
@@ -85,7 +87,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
             message: `Are you sure you want to delete the coupon for "${userName}"? This action cannot be undone.`,
             confirmText: 'Delete',
             onConfirm: () => {
-                handleDelete(coupon.code, userName)
+                handleDelete(coupon, userName)
                 closeModal()
             }
         })

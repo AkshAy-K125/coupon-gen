@@ -41,22 +41,28 @@ export const checkCouponExists = (code, coupons = []) => {
 // Function to check if name with initials already exists
 export const checkNameWithInitialsExists = (firstName, initials, coupons = []) => {
   const searchName = initials ? `${firstName} ${initials}` : firstName
-  return coupons.some(coupon => coupon.user.name.toUpperCase() === searchName.toUpperCase())
+  return coupons.some(coupon => {
+    const couponName = coupon.user?.name || coupon.name || ''
+    return couponName.toUpperCase() === searchName.toUpperCase()
+  })
 }
 
 // Function to check if exact name already exists for the same seva
 export const checkExactNameExistsForSeva = (fullName, seva, coupons = []) => {
   const trimmedName = fullName.trim().toUpperCase()
-  return coupons.some(coupon =>
-    coupon.user.name.toUpperCase() === trimmedName &&
-    coupon.seva === seva
-  )
+  return coupons.some(coupon => {
+    const couponName = coupon.user?.name || coupon.name || ''
+    return couponName.toUpperCase() === trimmedName && coupon.seva === seva
+  })
 }
 
 // Function to check if exact name exists (regardless of seva)
 export const checkExactNameExists = (fullName, coupons = []) => {
   const trimmedName = fullName.trim().toUpperCase()
-  return coupons.some(coupon => coupon.user.name.toUpperCase() === trimmedName)
+  return coupons.some(coupon => {
+    const couponName = coupon.user?.name || coupon.name || ''
+    return couponName.toUpperCase() === trimmedName
+  })
 }
 
 // Function to generate 12-digit random number
