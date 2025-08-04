@@ -40,8 +40,7 @@
 .coupon-container {
     width: 100%;
     max-width: 900px;
-    height: 85vh;
-    /* Increased height for better accordion scrolling */
+    height: 75vh;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid #d4af37;
     border-radius: 15px;
@@ -382,6 +381,7 @@
     .coupon-container {
         padding: 1rem;
         max-width: 100%;
+        max-height: 70vh;
         margin: 0 0.5rem;
     }
 
@@ -460,6 +460,7 @@
 
     .coupon-container {
         padding: 0.75rem;
+        max-height: 65vh;
         margin: 0;
     }
 
@@ -600,10 +601,6 @@
 .accordion-container {
     overflow-y: auto;
     flex: 1;
-    min-height: 400px;
-    /* Ensure minimum height for scrolling */
-    max-height: calc(85vh - 8rem);
-    /* Adjusted for new container height */
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(212, 175, 55, 0.2);
