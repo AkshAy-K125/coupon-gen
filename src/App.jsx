@@ -374,8 +374,8 @@ function App() {
           <div className="login-container">
             <div className="login-header">
               <img src={logo} alt="ISKCON Logo" className="login-logo" />
-              <h1>ISKCON Shri Jagannath Mandir</h1>
-              <p>Kudupu Katte, Mangaluru</p>
+              <h1>ISKCON SHRI JAGANNATH MANDIR</h1>
+              <p>KUDUPU KATTE, MANGALURU</p>
             </div>
             <form onSubmit={handleLogin} className="login-form">
               <div className="form-group">
