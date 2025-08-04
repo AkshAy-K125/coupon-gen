@@ -81,6 +81,13 @@ export const delCoupon = async (coupon) => {
     }
     return await makeApiRequest(payload)
 }
+export const toggleIsActive = async (coupon) => {
+    const payload = {
+        "func": "toggleIsActive",
+        "coupon": coupon,
+    }
+    return await makeApiRequest(payload)
+}
 
 export const getCoupons = async () => {
     const payload = {

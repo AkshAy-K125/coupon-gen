@@ -1,71 +1,103 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode'
+import QrScanner from 'qr-scanner'
+import { toggleIsActive } from '../../utils/apiService'
 import './Scan.css'
 
-function Scan() {
+function Scan({ coupons = [], onCouponUpdate }) {
     const [isScanning, setIsScanning] = useState(false)
-    const [permissionGranted, setPermissionGranted] = useState(false)
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
-    const html5QrcodeScannerRef = useRef(null)
+    const [showModal, setShowModal] = useState(false)
+    const [modalMessage, setModalMessage] = useState('')
+    const [modalType, setModalType] = useState('') // 'success' or 'warning'
+    const videoRef = useRef(null)
+    const qrScannerRef = useRef(null)
 
-    const handleScanSuccess = (decodedText) => {
-        console.log('QR Code detected:', decodedText)
-        alert(`QR Code scanned: ${decodedText}`)
+    const validateCoupon = (scannedCode) => {
+        const coupon = coupons.find(c => c.code === scannedCode)
+
+        if (!coupon) {
+            return {
+                valid: false,
+                type: 'error',
+                message: 'Coupon code not found'
+            }
+        }
+
+        if (coupon.isActive) {
+            return {
+                valid: true,
+                type: 'success',
+                message: `${coupon.name} is allowed for ${coupon.seva}`,
+                coupon: coupon
+            }
+        } else {
+            return {
+                valid: false,
+                type: 'warning',
+                message: `${coupon.name} has already used the Coupon for ${coupon.seva}`,
+                coupon: coupon
+            }
+        }
     }
 
-    const handleScanError = (errorMessage) => {
-        // Ignore scanning errors, only log them
-        console.log('Scan error:', errorMessage)
+    const handleScanSuccess = async (result) => {
+        console.log('QR Code detected:', result.data)
+
+        // Pause scanning while showing modal
+        if (qrScannerRef.current) {
+            qrScannerRef.current.stop()
+        }
+
+        const validation = validateCoupon(result.data)
+
+        if (validation.valid && validation.coupon) {
+            // Mark coupon as used
+            const updatedCoupon = { ...validation.coupon, isActive: false }
+            console.log('Updated coupon:', updatedCoupon)
+            await toggleIsActive(updatedCoupon)
+            if (onCouponUpdate) {
+                onCouponUpdate(updatedCoupon)
+            } else {
+                console.log('No onCouponUpdate function provided')
+            }
+        }
+
+        setModalMessage(validation.message)
+        setModalType(validation.type)
+        setShowModal(true)
     }
 
     const startScanner = async () => {
-        console.log('Starting scanner...')
+        console.log('Starting QR scanner...')
         setError(null)
         setIsLoading(true)
 
         try {
-            if (html5QrcodeScannerRef.current) {
-                await html5QrcodeScannerRef.current.clear()
+            // Check if camera is supported
+            const hasCamera = await QrScanner.hasCamera()
+            if (!hasCamera) {
+                throw new Error('No camera found on this device')
             }
 
-            const config = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-                videoConstraints: {
-                    facingMode: 'environment'
-                }
-            }
-
-            console.log('Creating scanner with config:', config)
-            html5QrcodeScannerRef.current = new Html5QrcodeScanner("qr-reader", config, false)
-
-            console.log('Rendering scanner...')
-            html5QrcodeScannerRef.current.render(
-                (decodedText) => {
-                    console.log('Scanner started successfully')
-                    setIsLoading(false)
-                    setIsScanning(true)
-                    setPermissionGranted(true)
-                    handleScanSuccess(decodedText)
-                },
-                (error) => {
-                    console.log('Scan error (normal):', error)
-                    handleScanError(error)
+            // Create QR Scanner instance
+            qrScannerRef.current = new QrScanner(
+                videoRef.current,
+                handleScanSuccess,
+                {
+                    returnDetailedScanResult: true,
+                    highlightScanRegion: true,
+                    highlightCodeOutline: true,
+                    preferredCamera: 'environment', // Use back camera
                 }
             )
 
-            // Give scanner time to initialize
-            setTimeout(() => {
-                if (isLoading) {
-                    console.log('Scanner initialized')
-                    setIsLoading(false)
-                    setIsScanning(true)
-                    setPermissionGranted(true)
-                }
-            }, 2000)
+            // Start scanning
+            await qrScannerRef.current.start()
+
+            console.log('QR Scanner started successfully')
+            setIsLoading(false)
+            setIsScanning(true)
 
         } catch (err) {
             console.error('Scanner initialization error:', err)
@@ -76,12 +108,20 @@ function Scan() {
     }
 
     const stopScanner = () => {
-        if (html5QrcodeScannerRef.current) {
-            html5QrcodeScannerRef.current.clear()
-            html5QrcodeScannerRef.current = null
+        if (qrScannerRef.current) {
+            qrScannerRef.current.stop()
+            qrScannerRef.current.destroy()
+            qrScannerRef.current = null
         }
         setIsScanning(false)
-        setPermissionGranted(false)
+    }
+
+    const closeModal = () => {
+        setShowModal(false)
+        setModalMessage('')
+        setModalType('')
+        // Resume scanning
+        startScanner()
     }
 
     // Auto-start scanner when component mounts
@@ -90,9 +130,7 @@ function Scan() {
 
         // Cleanup on unmount
         return () => {
-            if (html5QrcodeScannerRef.current) {
-                html5QrcodeScannerRef.current.clear()
-            }
+            stopScanner()
         }
     }, [])
 
@@ -119,8 +157,31 @@ function Scan() {
             )}
 
             <div className="scanner-container" style={{ display: isLoading || error ? 'none' : 'flex' }}>
-                <div id="qr-reader"></div>
+                <video ref={videoRef} className="qr-video"></video>
             </div>
+
+            {/* Modal for scan results */}
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className={`modal-content ${modalType}`}>
+                        <div className="modal-header">
+                            <h3>
+                                {modalType === 'success' && '✅ Coupon Valid'}
+                                {modalType === 'warning' && '⚠️ Coupon Already Used'}
+                                {modalType === 'error' && '❌ Invalid Coupon'}
+                            </h3>
+                        </div>
+                        <div className="modal-body">
+                            <p>{modalMessage}</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button onClick={closeModal} className="modal-close-btn">
+                                Continue Scanning
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

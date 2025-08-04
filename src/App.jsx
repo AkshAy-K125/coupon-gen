@@ -348,7 +348,22 @@ function App() {
 
     // Show success message
     setSubmitMessage(`Coupon ${coupon.code} for ${coupon.name} deleted successfully`)
-    setTimeout(() => setSubmitMessage(''), 3000)
+  }
+
+  // Function to handle coupon updates (e.g., marking as used)
+  const handleCouponUpdate = (updatedCoupon) => {
+    console.log('Updating coupon locally:', updatedCoupon.code, updatedCoupon.name)
+
+    // Update the coupon in local state
+    const updatedCoupons = coupons.map(coupon =>
+      coupon.code === updatedCoupon.code ? updatedCoupon : coupon
+    )
+
+    // Update state and localStorage
+    setCoupons(updatedCoupons)
+    saveCouponsToStorage(updatedCoupons)
+
+    console.log('Coupon updated:', updatedCoupon.code, 'isActive:', updatedCoupon.isActive)
   }
 
   // Render different pages based on currentPage
@@ -398,7 +413,7 @@ function App() {
     // Render different pages when logged in
     switch (currentPage) {
       case 'scan':
-        return <Scan />
+        return <Scan coupons={coupons} onCouponUpdate={handleCouponUpdate} />
       case 'coupons':
         return <Coupon coupons={coupons} onDeleteCoupon={handleCouponDelete} />
       case 'home':
