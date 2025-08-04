@@ -7,6 +7,9 @@ import { delCoupon } from '../../utils/apiService'
 function Coupon({ coupons = [], onDeleteCoupon }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [sevaFilter, setSevaFilter] = useState('')
+    const [deletingCoupons, setDeletingCoupons] = useState(new Set())
+    const [fadingCoupons, setFadingCoupons] = useState(new Set())
+    const [expandedAccordions, setExpandedAccordions] = useState(new Set())
     const [modalState, setModalState] = useState({
         isOpen: false,
         type: null,
@@ -19,6 +22,11 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
 
     const handleDelete = async (coupon) => {
         console.log(coupon)
+        const couponId = coupon.code || coupon.id
+
+        // Start delete animation
+        setDeletingCoupons(prev => new Set([...prev, couponId]))
+
         try {
             console.log('Attempting to delete coupon:', coupon.code, coupon.name)
 
@@ -27,12 +35,37 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                 await delCoupon(coupon)
                 console.log('Server deletion successful')
 
-                // Only call local deletion if server deletion succeeds
-                onDeleteCoupon(coupon)
-                console.log('Local deletion completed')
+                // Start fade out animation
+                setFadingCoupons(prev => new Set([...prev, couponId]))
+
+                // Wait for fade animation to complete
+                setTimeout(() => {
+                    // Only call local deletion if server deletion succeeds
+                    onDeleteCoupon(coupon)
+                    console.log('Local deletion completed')
+
+                    // Clean up animation states
+                    setDeletingCoupons(prev => {
+                        const newSet = new Set(prev)
+                        newSet.delete(couponId)
+                        return newSet
+                    })
+                    setFadingCoupons(prev => {
+                        const newSet = new Set(prev)
+                        newSet.delete(couponId)
+                        return newSet
+                    })
+                }, 300) // Match CSS animation duration
             }
         } catch (err) {
             console.error('Error deleting coupon from server:', err)
+
+            // Reset delete state on error
+            setDeletingCoupons(prev => {
+                const newSet = new Set(prev)
+                newSet.delete(couponId)
+                return newSet
+            })
 
             // Show error message but don't clear the table
             alert(`Failed to delete coupon from server: ${err.message || 'Unknown error'}. Please try again.`)
@@ -45,7 +78,17 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
 
             if (confirmLocalDelete && onDeleteCoupon) {
                 console.log('User chose to delete locally despite server error')
-                onDeleteCoupon(coupon)
+
+                // Start fade out animation for local delete
+                setFadingCoupons(prev => new Set([...prev, couponId]))
+                setTimeout(() => {
+                    onDeleteCoupon(coupon)
+                    setFadingCoupons(prev => {
+                        const newSet = new Set(prev)
+                        newSet.delete(couponId)
+                        return newSet
+                    })
+                }, 300)
             }
         }
     }
@@ -102,6 +145,18 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         })
     }
 
+    const toggleAccordion = (couponCode) => {
+        setExpandedAccordions(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(couponCode)) {
+                newSet.delete(couponCode)
+            } else {
+                newSet.add(couponCode)
+            }
+            return newSet
+        })
+    }
+
     // Filter coupons by search term and seva
     const filteredCoupons = coupons.filter(coupon => {
         const matchesSearch = coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,57 +202,85 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                     </div>
                 </div>
 
-                <div className="table-container">
-                    <table className="coupon-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Coupon Code</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredCoupons.length > 0 ? (
-                                filteredCoupons.map(coupon => (
-                                    <tr key={coupon.code}>
-                                        <td>{coupon.name}</td>
-                                        <td>
-                                            <span
-                                                className="coupon-code"
-                                                title={coupon.code || 'No Code'}
-                                            >
-                                                {coupon.code && coupon.code.length > 4 ? `..${coupon.code.slice(-4)}` : (coupon.code || 'No Code')}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="pdf-btn"
-                                                    onClick={() => showPDFModal(coupon)}
-                                                    title={`Generate PDF for ${coupon.name}`}
-                                                >
-                                                    📄
-                                                </button>
-                                                <button
-                                                    className="delete-btn"
-                                                    onClick={() => showDeleteModal(coupon)}
-                                                    title="Delete coupon"
-                                                >
-                                                    🗑️
-                                                </button>
+                <div className="accordion-container">
+                    {filteredCoupons.length > 0 ? (
+                        filteredCoupons.map(coupon => {
+                            const couponId = coupon.code || coupon.id
+                            const isDeleting = deletingCoupons.has(couponId)
+                            const isFading = fadingCoupons.has(couponId)
+                            const isExpanded = expandedAccordions.has(coupon.code)
+
+                            return (
+                                <div
+                                    key={coupon.code}
+                                    className={`accordion-item ${isFading ? 'fade-out' : ''} ${isDeleting ? 'deleting' : ''}`}
+                                >
+                                    <div
+                                        className="accordion-header"
+                                        onClick={() => toggleAccordion(coupon.code)}
+                                    >
+                                        <div className="accordion-header-content">
+                                            <div className="status-indicator">
+                                                <div className={`status-circle ${coupon.isActive ? 'active' : 'inactive'}`}></div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="3" className="no-results">
-                                        {searchTerm || sevaFilter ? 'No coupons found matching your filters.' : 'No coupons available.'}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                            <div className="coupon-name">{coupon.name}</div>
+                                            <div className="accordion-toggle">
+                                                <span className={`accordion-arrow ${isExpanded ? 'expanded' : ''}`}>▼</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {isExpanded && (
+                                        <div className="accordion-body">
+                                            <div className="accordion-content">
+                                                <div className="coupon-details">
+                                                    <div className="detail-row">
+                                                        <span className="detail-label">Coupon Code:</span>
+                                                        <span className="detail-value">{coupon.code || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="detail-row">
+                                                        <span className="detail-label">Generated on:</span>
+                                                        <span className="detail-value">{coupon.memberSince || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="detail-row">
+                                                        <span className="detail-label">Seva:</span>
+                                                        <span className="detail-value">{coupon.seva || 'N/A'}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="accordion-actions">
+                                                    <button
+                                                        className={`delete-btn ${isDeleting ? 'loading' : ''}`}
+                                                        onClick={() => showDeleteModal(coupon)}
+                                                        title="Delete coupon"
+                                                        disabled={isDeleting}
+                                                    >
+                                                        {isDeleting ? (
+                                                            <div className="spinner"></div>
+                                                        ) : (
+                                                            '🗑️'
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        className="pdf-btn"
+                                                        onClick={() => showPDFModal(coupon)}
+                                                        title={`Generate PDF for ${coupon.name}`}
+                                                        disabled={isDeleting}
+                                                    >
+                                                        📄
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })
+                    ) : (
+                        <div className="no-results">
+                            {searchTerm || sevaFilter ? 'No coupons found matching your filters.' : 'No coupons available.'}
+                        </div>
+                    )}
                 </div>
             </div>
 
