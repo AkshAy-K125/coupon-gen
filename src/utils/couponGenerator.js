@@ -74,7 +74,7 @@ export const generateRandomCode = () => {
 }
 
 // Function to generate unique coupon code with duplicate prevention
-export const generateCouponCode = (fullName, existingCoupons = []) => {
+export const generateCouponCode = (existingCoupons = []) => {
   let code = generateRandomCode().toString()
 
   // Keep generating new codes until we find one that doesn't exist
@@ -129,32 +129,9 @@ export const generateUniqueName = (fullName, existingCoupons = []) => {
   return finalName
 }
 
-// Seva name to code mapping
-export const sevaNameToCode = {
-  'ABHISHEKAM SEVA': '1',
-  'MAHA ARATHI SEVA': '2',
-  'JHULAN SEVA': '3'
-}
-
-// Seva code to name mapping
-export const sevaCodeToName = {
-  '1': 'ABHISHEKAM SEVA',
-  '2': 'MAHA ARATHI SEVA',
-  '3': 'JHULAN SEVA'
-}
-
-// Function to normalize seva (convert name to code if needed)
-export const normalizeSeva = (seva) => {
-  // If it's already a code (1, 2, 3), return as is
-  if (['1', '2', '3'].includes(seva)) {
-    return seva
-  }
-  // If it's a seva name, convert to code
-  return sevaNameToCode[seva] || seva
-}
 
 // Function to add new coupon to data (supports both traditional and server data formats)
-export const addCouponToData = (code, userName, seva, existingCoupons = [], serverData = null) => {
+export const addCouponToData = (code, userName, seva, existingCoupons = []) => {
   // Check if name is incomplete
   const isIncompleteName = checkIncompleteName(userName)
 
@@ -166,15 +143,11 @@ export const addCouponToData = (code, userName, seva, existingCoupons = [], serv
     }
   }
 
-  // Normalize seva for consistency
-  const normalizedSeva = normalizeSeva(seva)
-
   // Check if exact name exists for the same seva
-  if (checkExactNameExistsForSeva(userName, normalizedSeva, existingCoupons)) {
-    const sevaName = sevaCodeToName[normalizedSeva] || seva
+  if (checkExactNameExistsForSeva(userName, seva, existingCoupons)) {
     return {
       error: true,
-      message: `A coupon for "${userName.trim().toUpperCase()}" and "${sevaName}" seva has already been generated. Please select a different seva or contact the administrator if you need assistance.`
+      message: `A coupon for "${userName.trim().toUpperCase()}" and "${seva}" has already been generated. Please select a different seva or contact the administrator if you need assistance.`
     }
   }
 
@@ -186,26 +159,11 @@ export const addCouponToData = (code, userName, seva, existingCoupons = [], serv
 
   // Use server data if provided, otherwise use traditional format
   const newCoupon = {
-    code: serverData ? serverData.id : code,
-    discount: "25%",
-    validUntil: serverData ? serverData.date : "2024-12-31",
-    seva: normalizedSeva,
-    user: {
-      name: originalName,
-      email: "",
-      phone: "",
-      memberSince: new Date().toISOString().split('T')[0]
-    },
-    isActive: serverData ? serverData.status : true,
-    // Add server data fields if available
-    ...(serverData && {
-      serverData: {
-        originalId: serverData.id,
-        originalSeva: serverData.seva,
-        originalDate: serverData.date,
-        originalStatus: serverData.status
-      }
-    })
+    code: code,
+    seva: seva,
+    name: originalName,
+    memberSince: new Date().toISOString().split('T')[0],
+    isActive: true
   }
 
   return {
@@ -214,13 +172,3 @@ export const addCouponToData = (code, userName, seva, existingCoupons = [], serv
     warning: null
   }
 }
-
-// Function to create coupon from server data
-export const addCouponFromServerData = (serverDataItem, existingCoupons = []) => {
-  const { name, id, seva, date, status } = serverDataItem
-
-  // Use the server data to create coupon
-  const result = addCouponToData(id, name, seva, existingCoupons, serverDataItem)
-
-  return result
-} 

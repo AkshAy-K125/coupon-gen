@@ -5,4 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/coupon-gen/',  // ✅ Add this line
   plugins: [react()],
+  server: {
+    host: '0.0.0.0', // Expose to network
+    https: false,    // Set to true if you need HTTPS for camera testing
+    open: false      // Don't auto-open browser since we're using network IP
+  }
 })

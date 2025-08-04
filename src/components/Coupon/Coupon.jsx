@@ -17,19 +17,18 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         onConfirm: null
     })
 
-    const handleDelete = async (code, name) => {
+    const handleDelete = async (coupon) => {
+        console.log(coupon)
         try {
-            console.log('Attempting to delete coupon:', code, name)
-
-            console.log(code)
+            console.log('Attempting to delete coupon:', coupon.code, coupon.name)
 
             if (onDeleteCoupon) {
                 // First try to delete from server
-                await delCoupon(code.id, name)
+                await delCoupon(coupon)
                 console.log('Server deletion successful')
 
                 // Only call local deletion if server deletion succeeds
-                onDeleteCoupon(code.id, name)
+                onDeleteCoupon(coupon)
                 console.log('Local deletion completed')
             }
         } catch (err) {
@@ -46,15 +45,14 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
 
             if (confirmLocalDelete && onDeleteCoupon) {
                 console.log('User chose to delete locally despite server error')
-                onDeleteCoupon(code, name)
+                onDeleteCoupon(coupon)
             }
         }
     }
 
     const handleGeneratePDF = async (coupon) => {
         try {
-            const userName = coupon.user?.name || coupon.name || 'Unknown'
-            await generateCouponPDF(userName, coupon.code, coupon.seva)
+            await generateCouponPDF(coupon.name, coupon.code, coupon.seva)
         } catch (error) {
             console.error('Error generating PDF:', error)
             // You could show an error message here
@@ -62,13 +60,12 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
     }
 
     const showPDFModal = (coupon) => {
-        const userName = coupon.user?.name || coupon.name || 'Unknown'
         setModalState({
             isOpen: true,
             type: 'pdf',
             coupon: coupon,
             title: 'Generate PDF',
-            message: `Do you want to generate and download a PDF for the coupon "${userName}"?`,
+            message: `Do you want to generate and download a PDF for the coupon "${coupon.name}"?`,
             confirmText: 'Generate PDF',
             onConfirm: () => {
                 handleGeneratePDF(coupon)
@@ -78,16 +75,16 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
     }
 
     const showDeleteModal = (coupon) => {
-        const userName = coupon.user?.name || coupon.name || 'Unknown'
+        console.log('Showing delete modal for coupon:', coupon)
         setModalState({
             isOpen: true,
             type: 'delete',
             coupon: coupon,
             title: 'Delete Coupon',
-            message: `Are you sure you want to delete the coupon for "${userName}"? This action cannot be undone.`,
+            message: `Are you sure you want to delete the coupon for "${coupon.name}"? This action cannot be undone.`,
             confirmText: 'Delete',
             onConfirm: () => {
-                handleDelete(coupon, userName)
+                handleDelete(coupon)
                 closeModal()
             }
         })
@@ -105,40 +102,16 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
         })
     }
 
-    // Transform the coupons data to match the table structure
-    const transformedCoupons = coupons.map((coupon, index) => ({
-        id: index + 1,
-        name: coupon.user?.name || coupon.name || 'Unknown',
-        coupon: coupon.code || 'No Code',
-        seva: coupon.seva,
-        discount: coupon.discount,
-        validUntil: coupon.validUntil,
-        isActive: coupon.isActive,
-        email: coupon.user?.email || '',
-        phone: coupon.user?.phone || '',
-        originalCoupon: coupon // Keep reference to original coupon object
-    }))
-
     // Filter coupons by search term and seva
-    const filteredCoupons = transformedCoupons.filter(coupon => {
+    const filteredCoupons = coupons.filter(coupon => {
         const matchesSearch = coupon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            coupon.coupon.toLowerCase().includes(searchTerm.toLowerCase())
+            coupon.code.includes(searchTerm.toLowerCase())
         const matchesSeva = !sevaFilter || coupon.seva === sevaFilter
         return matchesSearch && matchesSeva
     })
 
     // Get unique sevas for filter dropdown
-    const uniqueSevas = [...new Set(transformedCoupons.map(coupon => coupon.seva))].filter(Boolean)
-
-    // Get seva display name
-    const getSevaDisplayName = (sevaCode) => {
-        const sevaMap = {
-            '1': 'ABHISHEKAM SEVA',
-            '2': 'MAHA ARATHI SEVA',
-            '3': 'JHULAN SEVA'
-        }
-        return sevaMap[sevaCode] || sevaCode
-    }
+    const uniqueSevas = [...new Set(coupons.map(coupon => coupon.seva))].filter(Boolean)
 
     return (
         <div className="coupon-page">
@@ -163,7 +136,7 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                             <option value="">ALL SEVA</option>
                             {uniqueSevas.map(seva => (
                                 <option key={seva} value={seva}>
-                                    {getSevaDisplayName(seva)}
+                                    {seva}
                                 </option>
                             ))}
                         </select>
@@ -186,28 +159,28 @@ function Coupon({ coupons = [], onDeleteCoupon }) {
                         <tbody>
                             {filteredCoupons.length > 0 ? (
                                 filteredCoupons.map(coupon => (
-                                    <tr key={coupon.id}>
+                                    <tr key={coupon.code}>
                                         <td>{coupon.name}</td>
                                         <td>
                                             <span
                                                 className="coupon-code"
-                                                title={coupon.coupon || 'No Code'}
+                                                title={coupon.code || 'No Code'}
                                             >
-                                                {coupon.coupon && coupon.coupon.length > 4 ? `..${coupon.coupon.slice(-4)}` : (coupon.coupon || 'No Code')}
+                                                {coupon.code && coupon.code.length > 4 ? `..${coupon.code.slice(-4)}` : (coupon.code || 'No Code')}
                                             </span>
                                         </td>
                                         <td>
                                             <div className="action-buttons">
                                                 <button
                                                     className="pdf-btn"
-                                                    onClick={() => showPDFModal(coupon.originalCoupon)}
+                                                    onClick={() => showPDFModal(coupon)}
                                                     title={`Generate PDF for ${coupon.name}`}
                                                 >
                                                     📄
                                                 </button>
                                                 <button
                                                     className="delete-btn"
-                                                    onClick={() => showDeleteModal(coupon.originalCoupon)}
+                                                    onClick={() => showDeleteModal(coupon)}
                                                     title="Delete coupon"
                                                 >
                                                     🗑️

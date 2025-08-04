@@ -342,6 +342,47 @@
     font-size: 1rem;
 }
 
+.permission-help {
+    margin-top: 1rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.permission-help h4 {
+    color: #d4af37;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.permission-help ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: #f4f4f4;
+}
+
+.permission-help li {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.permission-help strong {
+    color: #d4af37;
+    font-weight: 600;
+}
+
+.permission-help p {
+    color: #f4f4f4 !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    margin: 0.5rem 0 !important;
+    line-height: 1.4;
+}
+
 .reset-btn {
     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
@@ -498,11 +539,11 @@
     background: transparent !important;
 }
 
-#qr-reader__scan_region > img {
+#qr-reader__scan_region>img {
     display: none !important;
 }
 
-#qr-reader__scan_region > video {
+#qr-reader__scan_region>video {
     border-radius: 12px !important;
     width: 100% !important;
     height: auto !important;
@@ -519,11 +560,11 @@
     margin: 5px 0 !important;
 }
 
-#qr-reader__dashboard_section_csr > div {
+#qr-reader__dashboard_section_csr>div {
     margin: 5px 0 !important;
 }
 
-#qr-reader__dashboard_section_csr > div > button {
+#qr-reader__dashboard_section_csr>div>button {
     background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
     color: white !important;
     border: none !important;
@@ -536,12 +577,12 @@
     font-family: 'Georgia', serif !important;
 }
 
-#qr-reader__dashboard_section_csr > div > button:hover {
+#qr-reader__dashboard_section_csr>div>button:hover {
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4) !important;
 }
 
-#qr-reader__dashboard_section_csr > div > select {
+#qr-reader__dashboard_section_csr>div>select {
     background: rgba(255, 255, 255, 0.1) !important;
     color: white !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -551,7 +592,7 @@
     font-family: 'Georgia', serif !important;
 }
 
-#qr-reader__dashboard_section_csr > div > select option {
+#qr-reader__dashboard_section_csr>div>select option {
     background: #1e3c72 !important;
     color: white !important;
 }
@@ -579,13 +620,13 @@
 }
 
 /* Hide default HTML5-QRCode styling that doesn't match our design */
-#qr-reader__dashboard_section_csr > div > span {
+#qr-reader__dashboard_section_csr>div>span {
     color: #f4f4f4 !important;
     font-family: 'Georgia', serif !important;
     font-size: 0.9rem !important;
 }
 
-#qr-reader__dashboard_section_csr > div > input {
+#qr-reader__dashboard_section_csr>div>input {
     background: rgba(255, 255, 255, 0.1) !important;
     color: white !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -595,7 +636,7 @@
     font-family: 'Georgia', serif !important;
 }
 
-#qr-reader__dashboard_section_csr > div > input::placeholder {
+#qr-reader__dashboard_section_csr>div>input::placeholder {
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
@@ -604,17 +645,17 @@
     .qr-scanner-container {
         max-width: 300px;
     }
-    
+
     #qr-reader {
         min-height: 250px;
     }
-    
+
     #qr-reader__dashboard {
         margin: 5px !important;
         padding: 8px !important;
     }
-    
-    #qr-reader__dashboard_section_csr > div > button {
+
+    #qr-reader__dashboard_section_csr>div>button {
         padding: 6px 12px !important;
         font-size: 0.8rem !important;
     }

@@ -63,26 +63,21 @@ export const loginCheck = async (username, password) => {
 /**
  * Add coupon API call
  * @param {Object} coupon - Coupon object to add
- * @param {string} name - User name (uppercased)
- * @param {string} seva - Seva type
  * @returns {Promise<Object>} - Add coupon response
  */
-export const addCoupon = async (coupon, name, seva) => {
+export const addCoupon = async (coupon) => {
     const payload = {
         "func": "addCoupon",
         "coupon": coupon,
-        "name": name.toUpperCase(),
-        "seva": seva
     }
 
     return await makeApiRequest(payload)
 }
 
-export const delCoupon = async (coupon, name) => {
+export const delCoupon = async (coupon) => {
     const payload = {
         "func": "delCoupon",
         "coupon": coupon,
-        "name": name.toUpperCase()
     }
     return await makeApiRequest(payload)
 }

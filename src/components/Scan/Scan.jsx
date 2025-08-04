@@ -8,6 +8,7 @@ function Scan({ coupons = [] }) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
     const [cameraError, setCameraError] = useState(null)
+    const [permissionStatus, setPermissionStatus] = useState('prompt') // 'granted', 'denied', 'prompt'
     const scannerRef = useRef(null)
     const html5QrcodeScannerRef = useRef(null)
 
@@ -31,17 +32,17 @@ function Scan({ coupons = [] }) {
         console.log('QR Code detected:', decodedText)
         setIsScanning(false)
         setIsLoading(true)
-        
+
         // Stop the scanner
         if (html5QrcodeScannerRef.current) {
             html5QrcodeScannerRef.current.clear()
         }
-        
+
         // Simulate API call delay
         setTimeout(() => {
             setIsLoading(false)
             const validation = validateCoupon(decodedText)
-            
+
             if (validation.valid) {
                 setScanResult(validation.coupon)
             } else {
@@ -55,21 +56,85 @@ function Scan({ coupons = [] }) {
         console.log('Scan error:', errorMessage)
     }
 
-    const startScanner = () => {
+    // Check if we're on HTTPS (required for camera access on mobile)
+    const checkHTTPS = () => {
+        return location.protocol === 'https:' || location.hostname === 'localhost'
+    }
+
+    // Check camera permissions
+    const checkCameraPermission = async () => {
+        try {
+            // Check if mediaDevices is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Camera API not supported in this browser')
+            }
+
+            // Check if we're on HTTPS
+            if (!checkHTTPS()) {
+                throw new Error('Camera access requires HTTPS connection')
+            }
+
+            // Request camera permission
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' } // Use rear camera if available
+            })
+
+            // Stop the stream immediately as we just needed to check permissions
+            stream.getTracks().forEach(track => track.stop())
+
+            setPermissionStatus('granted')
+            return true
+        } catch (error) {
+            console.error('Camera permission error:', error)
+            setPermissionStatus('denied')
+
+            // Set specific error messages based on error type
+            if (error.name === 'NotAllowedError') {
+                setCameraError('Camera access denied. Please allow camera permissions in your browser settings.')
+            } else if (error.name === 'NotFoundError') {
+                setCameraError('No camera found on this device.')
+            } else if (error.name === 'NotSupportedError') {
+                setCameraError('Camera is not supported in this browser.')
+            } else if (error.message.includes('HTTPS')) {
+                setCameraError('Camera access requires a secure HTTPS connection.')
+            } else {
+                setCameraError(error.message || 'Unable to access camera. Please check your permissions.')
+            }
+
+            return false
+        }
+    }
+
+    const startScanner = async () => {
         if (html5QrcodeScannerRef.current) {
             html5QrcodeScannerRef.current.clear()
         }
 
         setCameraError(null)
-        setIsScanning(true)
         setScanResult(null)
         setError(null)
+        setIsLoading(true)
+
+        // First check camera permissions
+        const hasPermission = await checkCameraPermission()
+
+        if (!hasPermission) {
+            setIsLoading(false)
+            return
+        }
+
+        setIsScanning(true)
+        setIsLoading(false)
 
         const config = {
             fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+            // Add more specific camera constraints
+            videoConstraints: {
+                facingMode: 'environment' // Use rear camera on mobile
+            }
         }
 
         try {
@@ -82,7 +147,16 @@ function Scan({ coupons = [] }) {
             html5QrcodeScannerRef.current.render(handleScanSuccess, handleScanError)
         } catch (err) {
             console.error('Scanner initialization error:', err)
-            setCameraError('Failed to initialize camera. Please check permissions.')
+
+            // More specific error handling
+            if (err.message && err.message.includes('Permission')) {
+                setCameraError('Camera permission denied. Please allow camera access and try again.')
+            } else if (err.message && err.message.includes('NotFound')) {
+                setCameraError('No camera found on this device.')
+            } else {
+                setCameraError('Failed to initialize camera. Please check permissions and try again.')
+            }
+
             setIsScanning(false)
         }
     }
@@ -95,8 +169,8 @@ function Scan({ coupons = [] }) {
         setIsScanning(false)
     }
 
-    const handleStartScan = () => {
-        startScanner()
+    const handleStartScan = async () => {
+        await startScanner()
     }
 
     const handleStopScan = () => {
@@ -108,6 +182,7 @@ function Scan({ coupons = [] }) {
         setError(null)
         setIsLoading(false)
         setCameraError(null)
+        setPermissionStatus('prompt')
     }
 
     const formatDate = (dateString) => {
@@ -117,6 +192,26 @@ function Scan({ coupons = [] }) {
             day: 'numeric'
         })
     }
+
+    // Check permissions on component mount
+    useEffect(() => {
+        const checkInitialPermissions = async () => {
+            // Only check HTTPS and basic browser support on mount
+            if (!checkHTTPS()) {
+                setCameraError('Camera access requires a secure HTTPS connection.')
+                setPermissionStatus('denied')
+                return
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setCameraError('Camera API not supported in this browser.')
+                setPermissionStatus('denied')
+                return
+            }
+        }
+
+        checkInitialPermissions()
+    }, [])
 
     // Cleanup on component unmount
     useEffect(() => {
@@ -155,9 +250,11 @@ function Scan({ coupons = [] }) {
                         <button
                             className="scan-btn"
                             onClick={handleStartScan}
-                            disabled={isLoading}
+                            disabled={isLoading || permissionStatus === 'denied'}
                         >
-                            Start Scanning
+                            {isLoading ? 'Checking Permissions...' :
+                                permissionStatus === 'denied' ? 'Camera Access Required' :
+                                    'Start Scanning'}
                         </button>
                     </div>
                 ) : isScanning ? (
@@ -178,12 +275,28 @@ function Scan({ coupons = [] }) {
             {cameraError && (
                 <div className="scan-result error">
                     <div className="result-header">
-                        <h3>❌ Camera Error</h3>
+                        <h3>❌ Camera Access Issue</h3>
                     </div>
                     <div className="result-content">
                         <div className="error-message">
-                            <p>{cameraError}</p>
-                            <p>Please allow camera permissions and try again.</p>
+                            <p><strong>{cameraError}</strong></p>
+
+                            {cameraError.includes('denied') && (
+                                <div className="permission-help">
+                                    <h4>To enable camera access:</h4>
+                                    <ul>
+                                        <li><strong>Chrome/Safari:</strong> Look for the camera icon in the address bar and click "Allow"</li>
+                                        <li><strong>Firefox:</strong> Click the shield icon and enable camera permissions</li>
+                                        <li><strong>Mobile:</strong> Check your browser settings and allow camera access for this site</li>
+                                    </ul>
+                                </div>
+                            )}
+
+                            {cameraError.includes('HTTPS') && (
+                                <div className="permission-help">
+                                    <p>Camera access requires a secure connection. Please access this site via HTTPS.</p>
+                                </div>
+                            )}
                         </div>
                         <button className="reset-btn" onClick={handleReset}>
                             Try Again
@@ -216,7 +329,7 @@ function Scan({ coupons = [] }) {
                                 <span className="value">{formatDate(scanResult.validUntil)}</span>
                             </div>
                         </div>
-                        
+
                         <div className="user-details">
                             <h4>Customer Information</h4>
                             <div className="detail-row">
@@ -236,7 +349,7 @@ function Scan({ coupons = [] }) {
                                 <span className="value">{formatDate(scanResult.user.memberSince)}</span>
                             </div>
                         </div>
-                        
+
                         <button className="reset-btn" onClick={handleReset}>
                             Scan Another Coupon
                         </button>

@@ -5,7 +5,7 @@ import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
 import Scan from './components/Scan/Scan'
 import Coupon from './components/Coupon/Coupon'
 import logo from './assets/Logo.png'
-import { generateCouponCode, addCouponToData, addCouponFromServerData, sevaNameToCode, sevaCodeToName } from './utils/couponGenerator'
+import { generateCouponCode, addCouponToData } from './utils/couponGenerator'
 import { generateCouponPDF } from './utils/pdfGenerator'
 import { loginCheck, addCoupon, getCoupons } from './utils/apiService'
 import couponData from './data/coupons.json'
@@ -24,8 +24,6 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [coupons, setCoupons] = useState([])
-  const [serverData, setServerData] = useState([])
-  const [showServerDataSection, setShowServerDataSection] = useState(false)
   const [isLoadingCoupons, setIsLoadingCoupons] = useState(false)
 
 
@@ -255,72 +253,6 @@ function App() {
     fetchGitaQuote()
   }
 
-  // Function to process server data and generate coupons
-  const processServerData = (serverDataArray) => {
-    if (!Array.isArray(serverDataArray)) {
-      setSubmitMessage('Error: Invalid server data format')
-      return
-    }
-
-    let successCount = 0
-    let errorCount = 0
-    const errors = []
-
-    const newCoupons = []
-
-    serverDataArray.forEach((serverItem, index) => {
-      try {
-        const result = addCouponFromServerData(serverItem, [...coupons, ...newCoupons])
-
-        if (result.error) {
-          errorCount++
-          errors.push(`Item ${index + 1} (${serverItem.name}): ${result.message}`)
-        } else {
-          successCount++
-          newCoupons.push(result.coupon)
-        }
-      } catch (error) {
-        errorCount++
-        errors.push(`Item ${index + 1}: ${error.message}`)
-      }
-    })
-
-    if (newCoupons.length > 0) {
-      const updatedCoupons = [...coupons, ...newCoupons]
-      setCoupons(updatedCoupons)
-      saveCouponsToStorage(updatedCoupons)
-
-      // Try to sync with server
-      newCoupons.forEach(async (coupon) => {
-        try {
-          await addCoupon(coupon, coupon.user.name, coupon.seva)
-        } catch (error) {
-          console.error('Error syncing coupon to server:', error)
-        }
-      })
-    }
-
-    let message = `Server data processed: ${successCount} successful, ${errorCount} errors`
-    if (errors.length > 0) {
-      message += `\n\nErrors:\n${errors.join('\n')}`
-    }
-
-    setSubmitMessage(message)
-  }
-
-  // Function to handle manual server data input
-  const handleServerDataSubmit = (e) => {
-    e.preventDefault()
-
-    if (!serverData || serverData.length === 0) {
-      setSubmitMessage('No server data to process')
-      return
-    }
-
-    processServerData(serverData)
-    setServerData([])
-    setShowServerDataSection(false)
-  }
 
   const handleNavigation = (page) => {
     setCurrentPage(page)
@@ -343,7 +275,7 @@ function App() {
 
     try {
       // Generate unique coupon code using existing coupons
-      const couponCode = generateCouponCode(name.trim(), coupons)
+      const couponCode = generateCouponCode(coupons)
 
       // Add coupon to data with duplicate prevention
       const result = addCouponToData(couponCode, name.trim(), sevaType, coupons)
@@ -363,7 +295,7 @@ function App() {
 
       // Try to sync with server (but don't roll back on failure)
       try {
-        await addCoupon(result.coupon, name.trim(), sevaType)
+        await addCoupon(result.coupon)
         console.log('Coupon synced to server successfully')
       } catch (error) {
         console.error('Error syncing coupon to server:', error)
@@ -372,9 +304,9 @@ function App() {
       }
 
       // Generate and download PDF
-      const pdfGenerated = await generateCouponPDF(result.coupon.user.name, couponCode, sevaType)
+      const pdfGenerated = await generateCouponPDF(result.coupon.name, result.coupon.code, result.coupon.seva)
 
-      let message = `Hare Krishna! Coupon generated successfully for ${result.coupon.user.name}.`
+      let message = `Hare Krishna! Coupon generated successfully for ${result.coupon.name}.`
 
       // Add warning if name was modified
       if (result.warning) {
@@ -398,14 +330,14 @@ function App() {
   }
 
   // Function to handle coupon deletion - called after server deletion succeeds
-  const handleCouponDelete = (couponCode, userName) => {
-    console.log('Deleting coupon locally:', couponCode, userName)
+  const handleCouponDelete = (coupon) => {
+    console.log('Deleting coupon locally:', coupon.code, coupon.name)
 
     console.log("handleCouponDelete")
-    console.log(couponCode)
+    console.log(coupon.code)
 
     // Remove from local state
-    const updatedCoupons = coupons.filter(coupon => coupon.id !== couponCode)
+    const updatedCoupons = coupons.filter(savedCoupon => savedCoupon.code !== coupon.code)
     console.log(updatedCoupons)
     console.log('Updated coupons after deletion:', updatedCoupons.length)
 
@@ -415,7 +347,7 @@ function App() {
     saveCouponsToStorage(updatedCoupons)
 
     // Show success message
-    setSubmitMessage(`Coupon ${couponCode} for ${userName} deleted successfully`)
+    setSubmitMessage(`Coupon ${coupon.code} for ${coupon.name} deleted successfully`)
     setTimeout(() => setSubmitMessage(''), 3000)
   }
 
@@ -506,9 +438,9 @@ function App() {
                   className="seva-select"
                 >
                   <option value="" disabled>Select Seva</option>
-                  <option value="1">ABHISHEKAM SEVA</option>
-                  <option value="2">MAHA ARATHI SEVA</option>
-                  <option value="3">JHULAN SEVA</option>
+                  <option value="ABHISHEKAM SEVA">ABHISHEKAM SEVA</option>
+                  <option value="MAHA ARATHI SEVA">MAHA ARATHI SEVA</option>
+                  <option value="JHULAN SEVA">JHULAN SEVA</option>
                 </select>
                 <div className="landing-coupon-section">
                   <h3>Click below to generate coupon code</h3>
