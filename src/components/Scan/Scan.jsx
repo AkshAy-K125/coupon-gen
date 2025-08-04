@@ -61,8 +61,8 @@ function Scan({ coupons = [] }) {
         return location.protocol === 'https:' || location.hostname === 'localhost'
     }
 
-    // Check camera permissions
-    const checkCameraPermission = async () => {
+    // Check basic requirements (no actual camera access)
+    const checkBasicRequirements = () => {
         try {
             // Check if mediaDevices is supported
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -74,31 +74,15 @@ function Scan({ coupons = [] }) {
                 throw new Error('Camera access requires HTTPS connection')
             }
 
-            // Request camera permission
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' } // Use rear camera if available
-            })
-
-            // Stop the stream immediately as we just needed to check permissions
-            stream.getTracks().forEach(track => track.stop())
-
-            setPermissionStatus('granted')
             return true
         } catch (error) {
-            console.error('Camera permission error:', error)
+            console.error('Basic requirements check failed:', error)
             setPermissionStatus('denied')
 
-            // Set specific error messages based on error type
-            if (error.name === 'NotAllowedError') {
-                setCameraError('Camera access denied. Please allow camera permissions in your browser settings.')
-            } else if (error.name === 'NotFoundError') {
-                setCameraError('No camera found on this device.')
-            } else if (error.name === 'NotSupportedError') {
-                setCameraError('Camera is not supported in this browser.')
-            } else if (error.message.includes('HTTPS')) {
+            if (error.message.includes('HTTPS')) {
                 setCameraError('Camera access requires a secure HTTPS connection.')
             } else {
-                setCameraError(error.message || 'Unable to access camera. Please check your permissions.')
+                setCameraError(error.message || 'Browser does not support camera access.')
             }
 
             return false
@@ -115,16 +99,11 @@ function Scan({ coupons = [] }) {
         setError(null)
         setIsLoading(true)
 
-        // First check camera permissions
-        const hasPermission = await checkCameraPermission()
-
-        if (!hasPermission) {
+        // Check basic requirements (no camera access yet)
+        if (!checkBasicRequirements()) {
             setIsLoading(false)
             return
         }
-
-        setIsScanning(true)
-        setIsLoading(false)
 
         const config = {
             fps: 10,
@@ -144,20 +123,52 @@ function Scan({ coupons = [] }) {
                 false
             )
 
-            html5QrcodeScannerRef.current.render(handleScanSuccess, handleScanError)
+            // Add timeout for scanner initialization
+            const initTimeout = setTimeout(() => {
+                if (!isScanning) {
+                    setCameraError('Camera initialization timed out. Please try again.')
+                    setIsLoading(false)
+                    setIsScanning(false)
+                    setPermissionStatus('denied')
+                }
+            }, 10000) // 10 second timeout
+
+            // Let Html5QrcodeScanner handle permissions directly
+            html5QrcodeScannerRef.current.render(
+                (decodedText) => {
+                    clearTimeout(initTimeout)
+                    handleScanSuccess(decodedText)
+                },
+                (errorMessage) => {
+                    // Clear timeout on any error
+                    clearTimeout(initTimeout)
+                    handleScanError(errorMessage)
+                }
+            )
+
+            // Set states after render call
+            setIsScanning(true)
+            setIsLoading(false)
+            setPermissionStatus('granted')
+
         } catch (err) {
             console.error('Scanner initialization error:', err)
+            setIsLoading(false)
+            setIsScanning(false)
+            setPermissionStatus('denied')
 
             // More specific error handling
-            if (err.message && err.message.includes('Permission')) {
+            if (err.message && (err.message.includes('Permission') || err.message.includes('NotAllowed'))) {
                 setCameraError('Camera permission denied. Please allow camera access and try again.')
-            } else if (err.message && err.message.includes('NotFound')) {
+            } else if (err.message && (err.message.includes('NotFound') || err.message.includes('No camera'))) {
                 setCameraError('No camera found on this device.')
+            } else if (err.message && err.message.includes('NotSupported')) {
+                setCameraError('Camera is not supported in this browser.')
+            } else if (err.message && err.message.includes('initialise')) {
+                setCameraError('Failed to initialize camera. Please refresh the page and try again.')
             } else {
-                setCameraError('Failed to initialize camera. Please check permissions and try again.')
+                setCameraError(err.message || 'Failed to initialize camera. Please check permissions and try again.')
             }
-
-            setIsScanning(false)
         }
     }
 
@@ -169,8 +180,8 @@ function Scan({ coupons = [] }) {
         setIsScanning(false)
     }
 
-    const handleStartScan = async () => {
-        await startScanner()
+    const handleStartScan = () => {
+        startScanner()
     }
 
     const handleStopScan = () => {
@@ -193,24 +204,14 @@ function Scan({ coupons = [] }) {
         })
     }
 
-    // Check permissions on component mount
+    // Check basic requirements on component mount
     useEffect(() => {
-        const checkInitialPermissions = async () => {
+        const checkInitialRequirements = () => {
             // Only check HTTPS and basic browser support on mount
-            if (!checkHTTPS()) {
-                setCameraError('Camera access requires a secure HTTPS connection.')
-                setPermissionStatus('denied')
-                return
-            }
-
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setCameraError('Camera API not supported in this browser.')
-                setPermissionStatus('denied')
-                return
-            }
+            checkBasicRequirements()
         }
 
-        checkInitialPermissions()
+        checkInitialRequirements()
     }, [])
 
     // Cleanup on component unmount
