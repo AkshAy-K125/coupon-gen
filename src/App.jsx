@@ -4,6 +4,7 @@ import gitaData from './data/bhagavadGita.json'
 import HamburgerMenu from './components/HamburgerMenu/HamburgerMenu'
 import Scan from './components/Scan/Scan'
 import Coupon from './components/Coupon/Coupon'
+import Downloads from './components/Downloads/Downloads'
 import logo from './assets/Logo.png'
 import { generateCouponCode, addCouponToData } from './utils/couponGenerator'
 import { generateCouponPDF } from './utils/pdfGenerator'
@@ -416,6 +417,8 @@ function App() {
         return <Scan coupons={coupons} onCouponUpdate={handleCouponUpdate} />
       case 'coupons':
         return <Coupon coupons={coupons} onDeleteCoupon={handleCouponDelete} />
+      case 'downloads':
+        return <Downloads />
       case 'home':
       default:
         return (

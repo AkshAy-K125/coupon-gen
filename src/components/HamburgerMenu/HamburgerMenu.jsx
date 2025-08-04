@@ -50,6 +50,11 @@ function HamburgerMenu({ onNavigate, currentPage, onLogout }) {
                             Coupons
                         </button>
                     </li>
+                    <li className={`menu-item ${currentPage === 'downloads' ? 'active' : ''}`}>
+                        <button onClick={() => handleNavigation('downloads')}>
+                            Downloads
+                        </button>
+                    </li>
                     <li className="menu-item logout-item">
                         <button onClick={handleLogout}>
                             Logout

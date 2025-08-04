@@ -50,36 +50,26 @@ export const generateCouponPDF = async (userName, couponCode, sevaType = '1') =>
     console.log('Gita Pink image loaded:', !!gitaPink)
     console.log('Gita Other image loaded:', !!gitaOther)
     console.log('Logo image loaded:', !!logo)
-    
+
     // Create new PDF document
     const doc = new jsPDF()
-    
+
     // Set font and colors
     doc.setFont('helvetica')
     doc.setTextColor(0, 0, 0)
-    
-    // Get seva display name
-const getSevaDisplayName = (sevaCode) => {
-  const sevaMap = {
-    '1': 'ABHISHEKAM SEVA',
-    '2': 'MAHA ARATHI SEVA',
-    '3': 'JHULAN SEVA'
-  }
-  return sevaMap[sevaCode] || sevaCode
-}
-    
+
     // Select background image based on seva type
     let backgroundImage
     switch (sevaType) {
-      case '1': // Puja
+      case 'ABHISHEKAM SEVA': // Puja
         backgroundImage = gitaGreen
         console.log('Using gita_green.png for Puja')
         break
-      case '2': // Prasadam
+      case 'MAHA ARATHI SEVA': // Prasadam
         backgroundImage = gitaPink
         console.log('Using gita_pink.png for Prasadam')
         break
-      case '3': // Other
+      case 'JHULAN SEVA': // Other
         backgroundImage = gitaOther
         console.log('Using gita_other.png for Other')
         break
@@ -87,12 +77,12 @@ const getSevaDisplayName = (sevaCode) => {
         backgroundImage = gitaGreen // Default to green
         console.log('Using default gita_green.png')
     }
-    
+
     // Add background image to fill the entire PDF
     try {
       doc.addImage(backgroundImage, 'PNG', 0, 0, 210, 297) // Full page background
       console.log('Background image added successfully')
-      
+
       // Add a very subtle white overlay to improve text readability
       doc.setFillColor(255, 255, 255)
       doc.setGlobalAlpha(0.15) // Very light overlay
@@ -102,7 +92,7 @@ const getSevaDisplayName = (sevaCode) => {
       console.error('Error adding background image:', imageError)
       // Continue without background image if there's an error
     }
-    
+
     // Add header with logo - repositioned to avoid overlap
     try {
       doc.addImage(logo, 'PNG', 15, 10, 20, 20) // Logo on the left, smaller and higher
@@ -117,50 +107,50 @@ const getSevaDisplayName = (sevaCode) => {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
     doc.text('KUDUPU KATTE, MANGALURU', 105, 35, { align: 'center' })
-    
+
     // Add separator line
     doc.setDrawColor(0, 0, 0)
     doc.setLineWidth(0.5)
     doc.line(20, 45, 190, 45)
-    
+
     // Add title with word wrapping
     doc.setFontSize(14)
     doc.setFont('helvetica', 'italic')
-    
+
     // Split the title into lines for better formatting
     const titleText = 'Hare Krishna Hare Krishna Krishna Krishna Hare Hare Hare Rama Hare Rama Rama Rama Hare Hare'
-    
+
     const titleMaxWidth = 180 // Maximum width for title text
     const titleLines = doc.splitTextToSize(titleText, titleMaxWidth)
-    
+
     // Add each line of the title
     titleLines.forEach((line, index) => {
       doc.text(line, 105, 60 + (index * 8), { align: 'center' })
     })
-    
+
     // Add spiritual message after Hare Krishna lines
     doc.setFontSize(8)
     doc.setFont('helvetica', 'bold')
     const messageY = 60 + (titleLines.length * 8) + 5
     doc.text('Please Chant and be Happy', 105, messageY, { align: 'center' })
-    
+
     // Add user name
     doc.setFontSize(16)
     doc.setFont('helvetica', 'normal')
     const nameY = messageY + 15
     doc.text(`${userName}`, 105, nameY, { align: 'center' })
-    
+
     // Add seva type
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
-    const sevaName = getSevaDisplayName(sevaType)
+    const sevaName = sevaType
     doc.text(`${sevaName}`, 105, nameY + 12, { align: 'center' })
-    
+
     // Add coupon code
     doc.setFontSize(14)
     doc.setFont('helvetica', 'bold')
     doc.text(`${couponCode}`, 105, nameY + 24, { align: 'center' })
-    
+
     // Add generation date
     const currentDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -170,59 +160,59 @@ const getSevaDisplayName = (sevaCode) => {
     doc.setFontSize(12)
     doc.setFont('helvetica', 'normal')
     doc.text(`Generated on: ${currentDate}`, 105, nameY + 36, { align: 'center' })
-    
+
     // Generate and add QR code
     const qrDataURL = await generateQRCode(couponCode)
     if (qrDataURL) {
       doc.addImage(qrDataURL, 'PNG', 75, nameY + 50, 60, 60)
     }
-    
+
     // Get random Bhagavad Gita quote
     const gitaQuote = getRandomGitaQuote()
-    
+
     // Add Hare Krishna message
     doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
-    
+
     // Add Bhagavad Gita quote with word wrapping
     doc.setFontSize(9)
     doc.setFont('helvetica', 'italic')
-    
+
     // Split quote into lines for better formatting
     const maxWidth = 160 // Reduced maximum width for better line breaks
     const quoteLines = doc.splitTextToSize(`"${gitaQuote.translation}"`, maxWidth)
-    
+
     // Calculate starting Y position for quote (adjust based on number of lines)
     const lineHeight = 7 // Increased line height for better spacing
     const quoteStartY = 225 - (quoteLines.length - 1) * lineHeight
-    
+
     // Add each line of the quote with better spacing
     quoteLines.forEach((line, index) => {
       doc.text(line, 105, quoteStartY + (index * lineHeight), { align: 'center' })
     })
-    
+
     // Add quote reference with more spacing
     doc.setFontSize(8)
     doc.setFont('helvetica', 'normal')
     const referenceY = quoteStartY + (quoteLines.length * lineHeight) + 10
     doc.text(`Chapter ${gitaQuote.chapter}, Verse ${gitaQuote.verse}`, 105, referenceY, { align: 'center' })
-    
+
     // Add footer line with more spacing
     doc.setLineWidth(0.5)
     const footerLineY = referenceY + 15
     doc.line(20, footerLineY, 190, footerLineY)
-    
+
     // Add footer text with more spacing
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
     doc.text('Thank you for visiting ISKCON SHRI JAGANNATH MANDIR', 105, footerLineY + 12, { align: 'center' })
-    
+
     // Generate filename
     const fileName = `coupon_${userName.replace(/\s+/g, '_')}_${Date.now()}.pdf`
-    
+
     // Save the PDF
     doc.save(fileName)
-    
+
     console.log('PDF generated successfully')
     return true
   } catch (error) {
