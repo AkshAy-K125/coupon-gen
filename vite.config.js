@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0', // Expose to network
-    https: true,     // Required for camera access on mobile devices
+    https: false,     // Required for camera access on mobile devices
     open: false      // Don't auto-open browser since we're using network IP
   }
 })

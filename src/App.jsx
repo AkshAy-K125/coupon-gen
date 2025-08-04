@@ -398,7 +398,7 @@ function App() {
     // Render different pages when logged in
     switch (currentPage) {
       case 'scan':
-        return <Scan coupons={coupons} />
+        return <Scan />
       case 'coupons':
         return <Coupon coupons={coupons} onDeleteCoupon={handleCouponDelete} />
       case 'home':
